@@ -21,8 +21,8 @@ export const app = new Elysia()
       },
     }),
   )
-  .onError(({ error, set }) => {
-    const httpError = toHttpError(error);
+  .onError(({ code, error, set }) => {
+    const httpError = toHttpError(error, code);
     set.status = httpError.statusCode;
     return httpError.body;
   });

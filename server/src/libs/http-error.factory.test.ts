@@ -32,6 +32,23 @@ describe("toHttpError", () => {
     expect(result.body).toEqual({ success: false, error: "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่" });
   });
 
+  it("code VALIDATION → 422 + ข้อความไทย", () => {
+    const result = toHttpError(new Error("body ไม่ถูกต้อง"), "VALIDATION");
+    expect(result.statusCode).toBe(422);
+    expect(result.body).toEqual({ success: false, error: "ข้อมูลไม่ถูกต้อง โปรดตรวจสอบ" });
+  });
+
+  it("code NOT_FOUND → 404 + ข้อความไทย", () => {
+    const result = toHttpError(new Error("ไม่มี route นี้"), "NOT_FOUND");
+    expect(result.statusCode).toBe(404);
+    expect(result.body).toEqual({ success: false, error: "ไม่พบทรัพยากรที่ขอ" });
+  });
+
+  it("DomainError ยัง map ตาม statusCode เมื่อ code ไม่ใช่ VALIDATION/NOT_FOUND", () => {
+    const result = toHttpError(new DomainForbiddenError(), "UNKNOWN");
+    expect(result.statusCode).toBe(403);
+  });
+
   it("ค่า unknown (ไม่ใช่ Error) → 500", () => {
     const result = toHttpError(undefined);
     expect(result.statusCode).toBe(500);
