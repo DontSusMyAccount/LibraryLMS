@@ -49,7 +49,7 @@ export function renewLoan(
   if (hasActiveReservation) {
     throw new DomainForbiddenError(RENEW_RESERVATION_MESSAGE);
   }
-  if (loan.renewedCount > policy.maxRenewals) {
+  if (loan.renewedCount >= policy.maxRenewals) {
     throw new DomainForbiddenError(RENEW_LIMIT_MESSAGE);
   }
   return {

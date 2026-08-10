@@ -190,7 +190,7 @@ describe("RenewUsecase", () => {
     });
   });
 
-  it("ต่ออายุเกินจำนวนครั้งสูงสุด → DomainForbiddenError", async () => {
+  it("ต่ออายุไม่ได้แล้วเมื่อ renewedCount ถึง maxRenewals → DomainForbiddenError", async () => {
     const state = buildState({
       loans: [
         {
@@ -200,7 +200,7 @@ describe("RenewUsecase", () => {
           borrowedAt: "2026-07-01T00:00:00.000Z",
           dueAt: "2026-08-15T00:00:00.000Z",
           status: "active",
-          renewedCount: 3,
+          renewedCount: 2,
           loanPeriodDays: 14,
           dailyFineRate: 5,
           createdAt: "2026-07-01T00:00:00.000Z",

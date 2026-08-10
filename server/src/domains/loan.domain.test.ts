@@ -22,8 +22,11 @@ describe("calcDueDate", () => {
 });
 
 describe("renewLoan", () => {
-  it("renew ครั้งที่ max_renewals+1 → DomainForbiddenError", () => {
-    expect(() => renewLoan(loanWithRenews(2), policyMax2, false)).not.toThrow();
+  it("renew ครั้งที่ max_renewals+1 → DomainForbiddenError (ต่อได้ถึง maxRenewals ครั้งพอดี)", () => {
+    expect(() => renewLoan(loanWithRenews(1), policyMax2, false)).not.toThrow();
+    expect(() => renewLoan(loanWithRenews(2), policyMax2, false)).toThrowError(
+      DomainForbiddenError,
+    );
     expect(() => renewLoan(loanWithRenews(2), policyMax2, true)).toThrowError(DomainForbiddenError);
   });
 
