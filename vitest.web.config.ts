@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(rootDir, "."),
+      "@libsys/shared": resolve(rootDir, "server/src/shared.ts"),
     },
   },
 });
