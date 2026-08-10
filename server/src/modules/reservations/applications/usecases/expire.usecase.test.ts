@@ -63,7 +63,7 @@ function createReservationRepository(
           item.pickupDeadline !== undefined &&
           new Date(item.pickupDeadline) < now,
       ),
-    findActiveLoanById: async () => null,
+    findActiveLoanWithBook: async () => null,
     getSystemSetting: async () => pickupDays,
   };
 }

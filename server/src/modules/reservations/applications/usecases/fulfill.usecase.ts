@@ -18,6 +18,7 @@ const RESERVATION_NOT_FOUND_MESSAGE = "ไม่พบรายการจอ�
 const NOT_READY_MESSAGE = "รายการจองนี้ยังไม่พร้อมให้ยืม";
 const LOAN_NOT_FOUND_MESSAGE = "ไม่พบรายการยืมที่ยังค้างอยู่สำหรับการรับหนังสือ";
 const LOAN_USER_MISMATCH_MESSAGE = "รายการยืมไม่ตรงกับสมาชิกที่จองหนังสือนี้";
+const LOAN_BOOK_MISMATCH_MESSAGE = "รายการยืมไม่ตรงกับหนังสือที่จองเล่มนี้";
 
 @injectable()
 export class FulfillUsecase {
@@ -41,12 +42,16 @@ export class FulfillUsecase {
       throw new DomainConflictError(NOT_READY_MESSAGE);
     }
 
-    const loan = await this.reservations.findActiveLoanById(command.loanId);
-    if (!loan) {
+    const loanWithBook = await this.reservations.findActiveLoanWithBook(command.loanId);
+    if (!loanWithBook) {
       throw new DomainConflictError(LOAN_NOT_FOUND_MESSAGE);
     }
+    const { loan, bookId } = loanWithBook;
     if (loan.userId !== reservation.userId) {
       throw new DomainConflictError(LOAN_USER_MISMATCH_MESSAGE);
+    }
+    if (bookId !== reservation.bookId) {
+      throw new DomainConflictError(LOAN_BOOK_MISMATCH_MESSAGE);
     }
 
     const updated = await this.reservations.updateStatus(reservation.id, {

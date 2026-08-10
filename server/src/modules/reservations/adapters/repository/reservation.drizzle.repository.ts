@@ -5,6 +5,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { inject, injectable } from "tsyringe";
 
 import {
+  bookCopies,
   books,
   loans,
   reservations,
@@ -14,6 +15,7 @@ import {
 import type { BookTitle, LoanRecord, Paginated, ReservationRecord } from "../../../../shared";
 import { TOKENS } from "../../../tokens";
 import type {
+  IActiveLoanWithBook,
   ICreateReservationInput,
   IReservationListQuery,
   IReservationMemberInfo,
@@ -207,14 +209,18 @@ export class DrizzleReservationRepository implements IReservationRepository {
     return rows.map(toReservationRecord);
   }
 
-  async findActiveLoanById(loanId: string): Promise<LoanRecord | null> {
+  async findActiveLoanWithBook(loanId: string): Promise<IActiveLoanWithBook | null> {
     const rows = await this.db
-      .select()
+      .select({ loan: loans, bookId: bookCopies.bookId })
       .from(loans)
+      .innerJoin(bookCopies, eq(loans.copyId, bookCopies.id))
       .where(and(eq(loans.id, loanId), eq(loans.status, "active")))
       .limit(1);
     const row = rows[0];
-    return row ? toLoanRecord(row) : null;
+    if (!row) {
+      return null;
+    }
+    return { loan: toLoanRecord(row.loan), bookId: row.bookId };
   }
 
   async getSystemSetting(key: string): Promise<unknown> {

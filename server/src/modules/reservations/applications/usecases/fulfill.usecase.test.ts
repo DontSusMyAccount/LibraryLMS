@@ -39,6 +39,7 @@ function buildLoan(overrides: Partial<LoanRecord> = {}): LoanRecord {
 function createReservationRepository(
   records: ReservationRecord[],
   loans: LoanRecord[],
+  copyBookMap: Record<string, string> = {},
 ): IReservationRepository {
   return {
     findMemberById: async () => null,
@@ -63,8 +64,11 @@ function createReservationRepository(
       return item;
     },
     findReadyOverdue: async () => [],
-    findActiveLoanById: async (loanId) =>
-      loans.find((loan) => loan.id === loanId && loan.status === "active") ?? null,
+    findActiveLoanWithBook: async (loanId) => {
+      const loan = loans.find((item) => item.id === loanId && item.status === "active");
+      if (!loan) return null;
+      return { loan, bookId: copyBookMap[loan.copyId] };
+    },
     getSystemSetting: async () => 3,
   };
 }
@@ -94,7 +98,10 @@ describe("FulfillUsecase", () => {
     const records = [buildReservation()];
     const loans = [buildLoan()];
     const auditRepo = createAuditRepository();
-    const usecase = new FulfillUsecase(createReservationRepository(records, loans), auditRepo);
+    const usecase = new FulfillUsecase(
+      createReservationRepository(records, loans, { "c-1": "b-1" }),
+      auditRepo,
+    );
 
     const result = await usecase.execute({
       command: { id: "r-1", loanId: "loan-1" },
@@ -123,7 +130,7 @@ describe("FulfillUsecase", () => {
   it("รายการจองยังไม่พร้อม (waiting) → DomainConflictError", async () => {
     const records = [buildReservation({ status: "waiting" })];
     const usecase = new FulfillUsecase(
-      createReservationRepository(records, [buildLoan()]),
+      createReservationRepository(records, [buildLoan()], { "c-1": "b-1" }),
       createAuditRepository(),
     );
 
@@ -135,7 +142,7 @@ describe("FulfillUsecase", () => {
   it("ไม่พบ loan ที่ active สำหรับการ fulfill → DomainConflictError", async () => {
     const records = [buildReservation()];
     const usecase = new FulfillUsecase(
-      createReservationRepository(records, []),
+      createReservationRepository(records, [], { "c-1": "b-1" }),
       createAuditRepository(),
     );
 
@@ -148,7 +155,20 @@ describe("FulfillUsecase", () => {
     const records = [buildReservation()];
     const loans = [buildLoan({ userId: "u-other" })];
     const usecase = new FulfillUsecase(
-      createReservationRepository(records, loans),
+      createReservationRepository(records, loans, { "c-1": "b-1" }),
+      createAuditRepository(),
+    );
+
+    await expect(
+      usecase.execute({ command: { id: "r-1", loanId: "loan-1" } }),
+    ).rejects.toThrowError(DomainConflictError);
+  });
+
+  it("loan เป็นของหนังสือคนละเล่มกับที่จอง (book B แทน A) → DomainConflictError", async () => {
+    const records = [buildReservation()];
+    const loans = [buildLoan({ id: "loan-1", copyId: "c-b", userId: "u-1" })];
+    const usecase = new FulfillUsecase(
+      createReservationRepository(records, loans, { "c-b": "b-2" }),
       createAuditRepository(),
     );
 

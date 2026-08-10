@@ -49,7 +49,7 @@ function createReservationRepository(
       return item;
     },
     findReadyOverdue: async () => [],
-    findActiveLoanById: async () => null,
+    findActiveLoanWithBook: async () => null,
     getSystemSetting: async () => pickupDays,
   };
 }

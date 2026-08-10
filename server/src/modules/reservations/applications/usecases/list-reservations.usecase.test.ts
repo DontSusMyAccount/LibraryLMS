@@ -52,7 +52,7 @@ function createReservationRepository(records: ReservationRecord[]): IReservation
     countActiveByBook: async () => 0,
     updateStatus: async () => null,
     findReadyOverdue: async () => [],
-    findActiveLoanById: async () => null,
+    findActiveLoanWithBook: async () => null,
     getSystemSetting: async () => 3,
   };
 }

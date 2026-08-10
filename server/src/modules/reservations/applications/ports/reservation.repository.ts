@@ -14,6 +14,11 @@ export interface IReservationMemberInfo {
   status: UserStatus;
 }
 
+export interface IActiveLoanWithBook {
+  loan: LoanRecord;
+  bookId: string;
+}
+
 export interface ICreateReservationInput {
   bookId: string;
   userId: string;
@@ -45,6 +50,6 @@ export interface IReservationRepository {
   countActiveByBook(bookId: string): Promise<number>;
   updateStatus(id: string, input: IUpdateReservationInput): Promise<ReservationRecord | null>;
   findReadyOverdue(now: Date): Promise<ReservationRecord[]>;
-  findActiveLoanById(loanId: string): Promise<LoanRecord | null>;
+  findActiveLoanWithBook(loanId: string): Promise<IActiveLoanWithBook | null>;
   getSystemSetting(key: string): Promise<unknown>;
 }
