@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+coverage/
+bun.lock
+_tailadmin_ref/
+docs/
+db/
+.superpowers/
+design.md
+library-system-requirements.md
+README.md
+.env
+.env.*

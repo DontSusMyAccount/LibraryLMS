@@ -1,0 +1,6 @@
+[install]
+registry = "https://registry.npmjs.org/"
+trustedDependencies = ["lefthook"]
+
+[test]
+timeout = 30000
