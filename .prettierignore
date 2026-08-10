@@ -6,6 +6,7 @@ bun.lock
 _tailadmin_ref/
 docs/
 db/
+drizzle/
 .superpowers/
 design.md
 library-system-requirements.md
