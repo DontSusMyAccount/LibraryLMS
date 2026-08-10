@@ -29,6 +29,7 @@ export interface ProxyRequestInput {
   path: string[];
   headers: Headers;
   body?: BodyInit | null;
+  search?: URLSearchParams;
 }
 
 function proxyError(status: number, message: string): Response {
@@ -68,7 +69,11 @@ export async function handleProxyRequest(input: ProxyRequestInput): Promise<Resp
   }
 
   const pathSegments = input.path.map((segment) => encodeURIComponent(segment)).join("/");
-  const targetUrl = `${apiUrl.replace(/\/+$/, "")}/${pathSegments}`;
+  let targetUrl = `${apiUrl.replace(/\/+$/, "")}/${pathSegments}`;
+  const queryString = input.search?.toString();
+  if (queryString) {
+    targetUrl += `?${queryString}`;
+  }
 
   let upstream: Response;
   try {
@@ -109,6 +114,7 @@ async function proxyRoute(
     method: request.method,
     path,
     headers: new Headers(request.headers),
+    search: request.nextUrl.searchParams,
     body: body.byteLength > 0 ? body : undefined,
   });
 }

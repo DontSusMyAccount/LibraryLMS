@@ -11,6 +11,7 @@ const LOGIN_FETCH_TIMEOUT_MS = 10_000;
 
 const WRONG_CREDENTIALS_CODE = "invalid_credentials";
 const INACTIVE_ACCOUNT_CODE = "inactive_account";
+const INACTIVE_ACCOUNT_MESSAGE = "บัญชีผู้ใช้ถูกระงับใช้งาน";
 
 class InvalidCredentialsError extends CredentialsSignin {
   code = WRONG_CREDENTIALS_CODE;
@@ -39,6 +40,16 @@ function isUserRole(value: unknown): value is UserRole {
 
 function isUserStatus(value: unknown): value is UserStatus {
   return typeof value === "string" && (USER_STATUSES as readonly unknown[]).includes(value);
+}
+
+function toCredentialsError(errorBody: unknown): CredentialsSignin {
+  if (typeof errorBody === "object" && errorBody !== null) {
+    const record = errorBody as Record<string, unknown>;
+    if (record.error === INACTIVE_ACCOUNT_MESSAGE) {
+      return new InactiveAccountError();
+    }
+  }
+  return new InvalidCredentialsError();
 }
 
 function parseBackendLoginData(payload: unknown): BackendLoginData | null {
@@ -143,7 +154,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (!response.ok) {
-          throw new InvalidCredentialsError();
+          let errorBody: unknown;
+          try {
+            errorBody = await response.json();
+          } catch {
+            errorBody = undefined;
+          }
+          throw toCredentialsError(errorBody);
         }
 
         let payload: unknown;
@@ -156,9 +173,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const loginData = parseBackendLoginData(payload);
         if (!loginData) {
           throw new InvalidCredentialsError();
-        }
-        if (loginData.user.status !== "active") {
-          throw new InactiveAccountError();
         }
 
         return {

@@ -50,8 +50,8 @@ function requestHeaders(extra: Record<string, string> = {}): Headers {
   });
 }
 
-function proxyInput(path: string[], method = "GET", headers?: Headers) {
-  return { method, path, headers: headers ?? requestHeaders() };
+function proxyInput(path: string[], method = "GET", headers?: Headers, search?: URLSearchParams) {
+  return { method, path, headers: headers ?? requestHeaders(), search };
 }
 
 beforeEach(() => {
@@ -145,6 +145,23 @@ describe("app/api/backend/[...path] proxy route", () => {
 
     const response = await handleProxyRequest(proxyInput(["books"]));
     expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("forwards query params to the backend with correct encoding", async () => {
+    authMock.mockResolvedValue(buildSession(ACTIVE_USER));
+    const search = new URLSearchParams({
+      page: "2",
+      limit: "12",
+      search: "คณิต",
+      categoryId: "cat-1",
+    });
+
+    await handleProxyRequest(proxyInput(["books"], "GET", undefined, search));
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(
+      `${API_URL}/books?page=2&limit=12&search=%E0%B8%84%E0%B8%93%E0%B8%B4%E0%B8%95&categoryId=cat-1`,
+    );
   });
 
   it("does not apply cache policy to non-GET methods or failed upstream responses", async () => {
