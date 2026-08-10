@@ -1,0 +1,29 @@
+# --- Environment (ห้าม commit ไฟล์ secrets) ---
+.env
+.env.*
+!.env.example
+
+# --- Dependencies ---
+node_modules/
+.bun/
+
+# --- Build / Cache ---
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+
+# --- Testing ---
+playwright-report/
+test-results/
+
+# --- Uploads (ถ้าใช้ local storage fallback) ---
+uploads/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- IDE ---
+.idea/
+.vscode/
