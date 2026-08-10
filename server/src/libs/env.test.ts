@@ -46,4 +46,62 @@ describe("parseEnv", () => {
       }),
     ).toThrowError(/JWT_SECRET/);
   });
+
+  it("STORAGE_DRIVER default เป็น r2 เมื่อ R2_* ครบ", () => {
+    const env = parseEnv({
+      DATABASE_URL: "postgresql://u:p@localhost:5432/library_lms",
+      AUTH_SECRET: "a".repeat(32),
+      INTERNAL_SECRET: "b".repeat(16),
+      R2_ACCOUNT_ID: "acc",
+      R2_ACCESS_KEY_ID: "key",
+      R2_SECRET_ACCESS_KEY: "s".repeat(32),
+      R2_BUCKET_NAME: "covers",
+    });
+    expect(env.storageDriver).toBe("r2");
+  });
+
+  it("STORAGE_DRIVER default เป็น local เมื่อ R2_* ไม่ครบ", () => {
+    const env = parseEnv({
+      DATABASE_URL: "postgresql://u:p@localhost:5432/library_lms",
+      AUTH_SECRET: "a".repeat(32),
+      INTERNAL_SECRET: "b".repeat(16),
+      R2_ACCOUNT_ID: "acc",
+    });
+    expect(env.storageDriver).toBe("local");
+  });
+
+  it("STORAGE_DRIVER=local มีผลแม้ R2_* ครบ", () => {
+    const env = parseEnv({
+      DATABASE_URL: "postgresql://u:p@localhost:5432/library_lms",
+      AUTH_SECRET: "a".repeat(32),
+      INTERNAL_SECRET: "b".repeat(16),
+      R2_ACCOUNT_ID: "acc",
+      R2_ACCESS_KEY_ID: "key",
+      R2_SECRET_ACCESS_KEY: "s".repeat(32),
+      R2_BUCKET_NAME: "covers",
+      STORAGE_DRIVER: "local",
+    });
+    expect(env.storageDriver).toBe("local");
+  });
+
+  it("STORAGE_DRIVER=r2 ตั้งชัดเจนมีผล แม้ R2_* ไม่ครบ", () => {
+    const env = parseEnv({
+      DATABASE_URL: "postgresql://u:p@localhost:5432/library_lms",
+      AUTH_SECRET: "a".repeat(32),
+      INTERNAL_SECRET: "b".repeat(16),
+      STORAGE_DRIVER: "r2",
+    });
+    expect(env.storageDriver).toBe("r2");
+  });
+
+  it("STORAGE_DRIVER ค่าที่ไม่อนุญาตจะถูกปฏิเสธ", () => {
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: "postgresql://u:p@localhost:5432/library_lms",
+        AUTH_SECRET: "a".repeat(32),
+        INTERNAL_SECRET: "b".repeat(16),
+        STORAGE_DRIVER: "s3",
+      }),
+    ).toThrowError(/STORAGE_DRIVER/);
+  });
 });

@@ -43,12 +43,19 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: optionalString,
   R2_BUCKET_NAME: optionalString,
   R2_PUBLIC_URL: optionalUrl,
+  // STORAGE_DRIVER: "r2" | "local" — เลือก storage driver สำหรับ upload รูปปก
+  // - ตั้งค่าไว้ชัดเจน → ใช้ตามที่ตั้ง
+  // - ไม่ตั้ง → default "r2" ถ้ามี R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_BUCKET_NAME ครบ
+  //           มิฉะนั้น default "local" (เขียนลง uploads/ ซึ่ง gitignore และ serve ผ่าน Elysia static ใน dev)
+  // - ถ้าตั้ง "r2" แต่ R2_* ไม่ครบ จะได้ค่า "r2" แล้ว storage module จะ throw ตอน register (มีคำใบ้ให้ใช้ local)
+  STORAGE_DRIVER: z.enum(["r2", "local"]).optional(),
 });
 
 export type EnvInput = z.infer<typeof envSchema>;
 
-export interface Env extends Omit<EnvInput, "JWT_SECRET"> {
+export interface Env extends Omit<EnvInput, "JWT_SECRET" | "STORAGE_DRIVER"> {
   JWT_SECRET: string;
+  storageDriver: "r2" | "local";
 }
 
 export function parseEnv(record: Record<string, string | undefined>): Env {
@@ -63,7 +70,19 @@ export function parseEnv(record: Record<string, string | undefined>): Env {
   return {
     ...result.data,
     JWT_SECRET: result.data.JWT_SECRET ?? result.data.AUTH_SECRET,
+    storageDriver: resolveStorageDriver(result.data),
   };
+}
+
+function resolveStorageDriver(env: EnvInput): "r2" | "local" {
+  if (env.STORAGE_DRIVER !== undefined) {
+    return env.STORAGE_DRIVER;
+  }
+  const hasCompleteR2 = R2_REQUIRED_KEYS.every((key) => {
+    const value = env[key];
+    return typeof value === "string" && value.trim() !== "";
+  });
+  return hasCompleteR2 ? "r2" : "local";
 }
 
 function warnOnPartialR2(env: EnvInput): void {
