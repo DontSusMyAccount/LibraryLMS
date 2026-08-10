@@ -1,0 +1,39 @@
+import { describe, it, expect } from "vitest";
+import { toHttpError } from "./http-error.factory";
+import {
+  DomainConflictError,
+  DomainError,
+  DomainForbiddenError,
+  DomainNotFoundError,
+  DomainUnauthorizedError,
+} from "../domains/errors";
+
+describe("toHttpError", () => {
+  it.each<[DomainError, number]>([
+    [new DomainUnauthorizedError(), 401],
+    [new DomainForbiddenError(), 403],
+    [new DomainNotFoundError(), 404],
+    [new DomainConflictError(), 409],
+  ])("maps %s → %i", (error, statusCode) => {
+    const result = toHttpError(error);
+    expect(result.statusCode).toBe(statusCode);
+    expect(result.body).toEqual({ success: false, error: error.message });
+  });
+
+  it("DomainError ฐาน (statusCode 400) → 400", () => {
+    const result = toHttpError(new DomainError("คำขอไม่ถูกต้อง", 400));
+    expect(result.statusCode).toBe(400);
+    expect(result.body).toEqual({ success: false, error: "คำขอไม่ถูกต้อง" });
+  });
+
+  it("error ที่ไม่ใช่ DomainError → 500 + ข้อความไทย", () => {
+    const result = toHttpError(new Error("boom"));
+    expect(result.statusCode).toBe(500);
+    expect(result.body).toEqual({ success: false, error: "เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่" });
+  });
+
+  it("ค่า unknown (ไม่ใช่ Error) → 500", () => {
+    const result = toHttpError(undefined);
+    expect(result.statusCode).toBe(500);
+  });
+});
