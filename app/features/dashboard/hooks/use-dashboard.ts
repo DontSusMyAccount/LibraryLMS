@@ -126,9 +126,10 @@ export function useDashboard() {
   const isLoading = useDashboardStore((state) => state.isLoading);
   const isError = useDashboardStore((state) => state.isError);
   const errorMessage = useDashboardStore((state) => state.errorMessage);
+  const warnings = useDashboardStore((state) => state.warnings);
   const load = useDashboardStore((state) => state.load);
 
-  return { data, isLoading, isError, errorMessage, load };
+  return { data, isLoading, isError, errorMessage, warnings, load };
 }
 
 function startOfDayLocal(date: Date): Date {

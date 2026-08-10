@@ -26,6 +26,7 @@ const DEFAULT_MONTHLY_TARGET = 60;
 const FETCH_LIMIT = 100;
 
 const FALLBACK_ERROR_MESSAGE = "เกิดข้อผิดพลาดในการโหลดข้อมูล กรุณาลองใหม่";
+const FINES_UNAVAILABLE_MESSAGE = "ไม่สามารถโหลดข้อมูลค่าปรับ";
 
 export interface DashboardSourceData {
   loans: DashboardActiveLoanItem[];
@@ -78,6 +79,10 @@ async function loadCategories(): Promise<CategoryNode[]> {
   return result as unknown as CategoryNode[];
 }
 
+async function loadUnpaidFines(): Promise<FineRecord[]> {
+  throw new Error(FINES_UNAVAILABLE_MESSAGE);
+}
+
 export async function fetchDashboardData(
   identity: DashboardIdentity,
   now = new Date(),
@@ -88,8 +93,9 @@ export async function fetchDashboardData(
   const reservations = await runSafely(loadReservations, [], warnings);
   const books = await runSafely(loadBooks, [], warnings);
   const categories = await runSafely(loadCategories, [], warnings);
+  const fines = await runSafely(loadUnpaidFines, [], warnings);
 
-  const kpis: DashboardKpis = buildKpis({ loans, reservations, fines: [], now });
+  const kpis: DashboardKpis = buildKpis({ loans, reservations, fines, now });
   const dailyCheckouts: DailyCheckoutCount[] = buildDailyCheckouts(loans, now);
   const recentLoans: DashboardActiveLoanItem[] = buildRecentLoans(loans);
   const dueDates = buildDueDates(loans, now);

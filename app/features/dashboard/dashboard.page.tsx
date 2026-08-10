@@ -8,6 +8,7 @@ import {
   ListChecksIcon,
   RefreshCcwIcon,
   ReceiptTextIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
 
 import type { DashboardIdentity } from "./dashboard.types";
@@ -55,7 +56,7 @@ function DashboardLoading() {
 }
 
 export function DashboardPage({ identity }: DashboardPageProps) {
-  const { data, isLoading, isError, errorMessage, load } = useDashboard();
+  const { data, isLoading, isError, errorMessage, warnings, load } = useDashboard();
 
   useEffect(() => {
     void load(identity ?? { userId: null, userName: "" });
@@ -100,6 +101,18 @@ export function DashboardPage({ identity }: DashboardPageProps) {
 
   return (
     <div data-slot="dashboard-page" className="flex flex-col gap-6">
+      {warnings.length > 0 && (
+        <div
+          data-slot="dashboard-warnings"
+          className="flex items-start gap-2 rounded-lg border border-accent-amber/30 bg-accent-amber/10 px-4 py-3 text-body text-ink-body"
+        >
+          <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-accent-amber" />
+          <p>
+            <span className="font-medium">บางส่วนโหลดไม่สำเร็จ:</span> {warnings.join(" · ")}
+          </p>
+        </div>
+      )}
+
       <section
         data-slot="dashboard-heading"
         className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
