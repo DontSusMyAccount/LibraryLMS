@@ -34,4 +34,28 @@ describe("Calendar", () => {
     const visibleDot = dots.find((dot) => !dot.className.includes("hidden"));
     expect(visibleDot).toBeTruthy();
   });
+
+  it("anchors event dots to the local calendar day even when UTC bleeds to a different day", () => {
+    const now = new Date();
+    const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 5);
+    const { container } = render(<Calendar highlightedDates={[localMidnight]} />);
+
+    const localKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const utcKey = localMidnight.toISOString().slice(0, 10);
+
+    const localDayCell = container.querySelector(
+      `[data-slot='calendar-day'][data-date='${localKey}']`,
+    );
+    const localDot = localDayCell?.querySelector("[data-slot='calendar-event-dot']");
+    expect(localDot).toBeTruthy();
+    expect(localDot?.className).not.toContain("hidden");
+
+    if (utcKey !== localKey) {
+      const utcDayCell = container.querySelector(
+        `[data-slot='calendar-day'][data-date='${utcKey}']`,
+      );
+      const utcDot = utcDayCell?.querySelector("[data-slot='calendar-event-dot']");
+      expect(utcDot?.className).toContain("hidden");
+    }
+  });
 });
