@@ -1,3 +1,4 @@
+import type { Treaty } from "@elysiajs/eden";
 import { describe, expect, it } from "vitest";
 
 import { EdenRequestError, edenRequest, type EdenResolvedResponse } from "./eden-helpers";
@@ -6,6 +7,21 @@ interface TestItem {
   id: string;
   title: string;
 }
+
+type TreatyResponseWithError = Treaty.TreatyResponse<{
+  200: { success: true; data: TestItem };
+  404: { success: false; error: string };
+}>;
+
+const _assignProbeWithError: EdenResolvedResponse<{ success: true; data: TestItem }> =
+  null as unknown as TreatyResponseWithError;
+
+type TreatyResponseSuccessOnly = Treaty.TreatyResponse<{
+  200: { success: true; data: TestItem };
+}>;
+
+const _assignProbeSuccessOnly: EdenResolvedResponse<{ success: true; data: TestItem }> =
+  null as unknown as TreatyResponseSuccessOnly;
 
 describe("edenRequest", () => {
   it("คืน data เมื่อ response เป็น { success: true, data }", async () => {

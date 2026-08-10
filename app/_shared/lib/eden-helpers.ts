@@ -1,9 +1,9 @@
 import type { ApiError, ApiResponse, PaginatedResponse } from "@libsys/shared";
 
-export type EdenEnvelope = ApiResponse<unknown> | PaginatedResponse<unknown> | ApiError;
+export type EdenEnvelope = ApiResponse<unknown> | PaginatedResponse<unknown> | ApiError | null;
 
 export interface EdenRequestErrorPayload {
-  status: number;
+  status: unknown;
   value: unknown;
 }
 
@@ -11,7 +11,7 @@ export interface EdenResolvedResponse<TData> {
   data: TData | null;
   error: EdenRequestErrorPayload | null;
   status: number;
-  headers: Record<string, string>;
+  headers: unknown;
 }
 
 export type EdenPayload<TEnvelope> = TEnvelope extends {
@@ -54,6 +54,9 @@ function extractErrorMessage(value: unknown): string {
 }
 
 function isApiError(envelope: EdenEnvelope): envelope is ApiError {
+  if (envelope === null || typeof envelope !== "object") {
+    return false;
+  }
   return envelope.success === false;
 }
 
@@ -61,7 +64,7 @@ export async function edenRequest<TEnvelope extends EdenEnvelope>(
   response: EdenResolvedResponse<TEnvelope>,
 ): Promise<EdenPayload<TEnvelope>> {
   if (response.error) {
-    throw new EdenRequestError(extractErrorMessage(response.error.value), response.error.status);
+    throw new EdenRequestError(extractErrorMessage(response.error.value), response.status);
   }
   const envelope = response.data;
   if (envelope === null || typeof envelope !== "object") {
