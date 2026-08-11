@@ -47,6 +47,7 @@ function buildBookQueueMap(
 
 interface ReservationTableProps {
   reservations: ReservationListItem[];
+  queueReservations: ReservationListItem[];
   expandedBookId: string | null;
   isBusy: boolean;
   onToggleExpand: (bookId: string) => void;
@@ -56,13 +57,14 @@ interface ReservationTableProps {
 
 function ReservationTable({
   reservations,
+  queueReservations,
   expandedBookId,
   isBusy,
   onToggleExpand,
   onMarkReady,
   errorMessage,
 }: ReservationTableProps) {
-  const queueByBook = useMemo(() => buildBookQueueMap(reservations), [reservations]);
+  const queueByBook = useMemo(() => buildBookQueueMap(queueReservations), [queueReservations]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -165,7 +167,11 @@ function ReservationTable({
       </Table>
 
       {errorMessage != null && (
-        <p role="status" className="text-sm font-medium text-accent-coral">
+        <p
+          data-slot="reservation-table-error"
+          role="status"
+          className="text-sm font-medium text-accent-coral"
+        >
           {errorMessage}
         </p>
       )}

@@ -32,6 +32,7 @@ function ReservationSkeleton() {
 export function ReservationsPage() {
   const {
     reservations,
+    queueReservations,
     status,
     page,
     total,
@@ -115,11 +116,12 @@ export function ReservationsPage() {
           </div>
           <ReservationTable
             reservations={reservations}
+            queueReservations={queueReservations}
             expandedBookId={expandedBookId}
             isBusy={isBusy}
             onToggleExpand={toggleExpand}
             onMarkReady={(id) => void markReady(id)}
-            errorMessage={isBusy ? errorMessage : null}
+            errorMessage={errorMessage}
           />
           {totalPages > 1 && (
             <div className="mt-4 flex justify-end">

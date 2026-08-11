@@ -36,6 +36,29 @@ export async function fetchReservations(
   };
 }
 
+export async function fetchAllReservations(
+  status: ReservationStatus | null,
+): Promise<ReservationListPage> {
+  const query: { status?: ReservationStatus; limit: number } = { limit: DEFAULT_LIMIT };
+  if (status) {
+    query.status = status;
+  }
+
+  const all = await fetchAllPages(async (page) =>
+    edenRequest(await eden.reservations.get({ query: { ...query, page } })),
+  );
+  const bookNameMap = await fetchBookNameMap();
+
+  return {
+    success: true,
+    data: all.items.map((reservation) => enrichReservation(reservation, bookNameMap)),
+    total: all.total,
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    totalPages: all.totalPages,
+  };
+}
+
 function enrichReservation(
   reservation: ReservationRecord,
   bookNameMap: Map<string, BookNameMapValue>,
@@ -53,25 +76,33 @@ async function fetchBookNameMap(): Promise<Map<string, BookNameMapValue>> {
     const books = await fetchAllPages(async (page) =>
       edenRequest(await eden.catalog.books.get({ query: { page, limit: BOOKS_FETCH_LIMIT } })),
     );
-    return buildBookNameMap(books);
+    return buildBookNameMap(books.items);
   } catch {
     return new Map<string, BookNameMapValue>();
   }
 }
 
+interface FetchAllResult<T> {
+  items: T[];
+  total: number;
+  totalPages: number;
+}
+
 async function fetchAllPages<T>(
   requestPage: (page: number) => Promise<PaginatedResponse<T>>,
-): Promise<T[]> {
+): Promise<FetchAllResult<T>> {
   const collected: T[] = [];
   let page = 1;
+  let total = 0;
   let totalPages = 1;
   do {
     const result = await requestPage(page);
     collected.push(...result.data);
+    total = result.total;
     totalPages = result.totalPages;
     page += 1;
   } while (page <= totalPages);
-  return collected;
+  return { items: collected, total, totalPages };
 }
 
 export async function markReady(id: string): Promise<ReservationRecord> {

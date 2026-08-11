@@ -4,6 +4,7 @@ import { useReservationStore } from "../stores/reservation.store";
 
 export function useReservations() {
   const reservations = useReservationStore((state) => state.reservations);
+  const queueReservations = useReservationStore((state) => state.queueReservations);
   const status = useReservationStore((state) => state.status);
   const page = useReservationStore((state) => state.page);
   const totalPages = useReservationStore((state) => state.totalPages);
@@ -24,6 +25,7 @@ export function useReservations() {
 
   return {
     reservations,
+    queueReservations,
     status,
     page,
     total,

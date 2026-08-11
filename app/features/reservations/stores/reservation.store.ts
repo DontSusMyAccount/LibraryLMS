@@ -5,6 +5,7 @@ import { create } from "zustand";
 import type { ReservationStatus } from "@libsys/shared";
 
 import {
+  fetchAllReservations as fetchAllReservationsAction,
   fetchReservations as fetchReservationsAction,
   fulfill as fulfillAction,
   markReady as markReadyAction,
@@ -18,6 +19,7 @@ const FALLBACK_ERROR_MESSAGE = "เกิดข้อผิดพลาด ก�
 
 interface ReservationStoreState {
   reservations: ReservationListItem[];
+  queueReservations: ReservationListItem[];
   status: ReservationStatus | null;
   page: number;
   limit: number;
@@ -28,6 +30,7 @@ interface ReservationStoreState {
   errorMessage: string | null;
   expandedBookId: string | null;
   isBusy: boolean;
+  queueStatus: ReservationStatus | null | undefined;
   loadReservations: () => Promise<void>;
   setStatus: (status: ReservationStatus | null) => Promise<void>;
   setPage: (page: number) => Promise<void>;
@@ -40,6 +43,7 @@ interface ReservationStoreState {
 
 export const initialReservationState = {
   reservations: [],
+  queueReservations: [],
   status: null,
   page: DEFAULT_PAGE,
   limit: DEFAULT_LIMIT,
@@ -50,6 +54,7 @@ export const initialReservationState = {
   errorMessage: null,
   expandedBookId: null,
   isBusy: false,
+  queueStatus: undefined,
 };
 
 function toErrorMessage(error: unknown): string {
@@ -74,28 +79,48 @@ function mergeReservation(
   return reservations.map((item) => (item.id === updated.id ? { ...item, ...updated } : item));
 }
 
+function slicePage<T>(items: T[], page: number, limit: number): T[] {
+  const start = (page - 1) * limit;
+  return items.slice(start, start + limit);
+}
+
 export const useReservationStore = create<ReservationStoreState>((set, get) => ({
   ...initialReservationState,
 
   loadReservations: async () => {
     set({ isLoading: true, isError: false, errorMessage: null });
     try {
-      const result = await fetchReservationsAction(toListParams(get()));
-      set({
-        reservations: result.data,
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-        totalPages: result.totalPages,
-        isLoading: false,
-      });
+      const params = toListParams(get());
+      if (get().queueStatus === undefined) {
+        const all = await fetchAllReservationsAction(params.status);
+        set({
+          reservations: slicePage(all.data, get().page, get().limit),
+          queueReservations: all.data,
+          total: all.total,
+          page: all.page,
+          limit: all.limit,
+          totalPages: all.totalPages,
+          isLoading: false,
+          queueStatus: params.status,
+        });
+      } else {
+        const result = await fetchReservationsAction(params);
+        set({
+          reservations: result.data,
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+          totalPages: result.totalPages,
+          isLoading: false,
+        });
+      }
     } catch (error) {
       set({ isLoading: false, isError: true, errorMessage: toErrorMessage(error) });
     }
   },
 
   setStatus: async (status) => {
-    set({ status, page: DEFAULT_PAGE });
+    set({ status, page: DEFAULT_PAGE, queueStatus: undefined });
     await get().loadReservations();
   },
 
@@ -111,6 +136,7 @@ export const useReservationStore = create<ReservationStoreState>((set, get) => (
       set({
         isBusy: false,
         reservations: mergeReservation(get().reservations, reservation),
+        queueReservations: mergeReservation(get().queueReservations, reservation),
       });
       return true;
     } catch (error) {
@@ -126,6 +152,7 @@ export const useReservationStore = create<ReservationStoreState>((set, get) => (
       set({
         isBusy: false,
         reservations: mergeReservation(get().reservations, reservation),
+        queueReservations: mergeReservation(get().queueReservations, reservation),
       });
       return true;
     } catch (error) {
@@ -140,7 +167,7 @@ export const useReservationStore = create<ReservationStoreState>((set, get) => (
 
   queuePerBook: (bookId) => {
     const queue = get()
-      .reservations.filter((item) => item.bookId === bookId)
+      .queueReservations.filter((item) => item.bookId === bookId)
       .sort((a, b) => a.reservedAt.localeCompare(b.reservedAt));
     return queue;
   },
