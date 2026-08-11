@@ -16,6 +16,7 @@ coverage/
 # --- Testing ---
 playwright-report/
 test-results/
+e2e/.fixtures.json
 
 # --- Uploads (ถ้าใช้ local storage fallback) ---
 uploads/
