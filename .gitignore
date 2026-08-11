@@ -18,6 +18,10 @@ playwright-report/
 test-results/
 e2e/.fixtures.json
 
+# --- Runtime logs ---
+*.log
+!package-lock.json
+
 # --- Uploads (ถ้าใช้ local storage fallback) ---
 uploads/
 
