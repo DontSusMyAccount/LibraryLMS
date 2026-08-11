@@ -3,7 +3,11 @@ import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, toPublic } from "../../../../shared";
-import { userRepositoryToken, type IUserRepository } from "../ports/user.repository";
+import {
+  userRepositoryToken,
+  type IUserRepository,
+  type SearchUsersOptions,
+} from "../ports/user.repository";
 import type { IListUsersQuery, IListUsersReturnType } from "../schemas/user-schemas";
 
 function normalizePage(value: number | undefined): number {
@@ -25,13 +29,16 @@ export class ListUsersUsecase {
   async execute({ query }: { query: IListUsersQuery }): Promise<IListUsersReturnType> {
     const page = normalizePage(query.page);
     const limit = normalizeLimit(query.limit);
-    const normalizedQuery = query.q.trim();
+    const keyword = (query.q ?? "").trim();
 
-    if (!normalizedQuery) {
-      return { data: [], total: 0, page, limit, totalPages: 0 };
-    }
+    const searchOptions: SearchUsersOptions = {
+      page,
+      limit,
+      ...(query.role !== undefined && { role: query.role }),
+      ...(query.status !== undefined && { status: query.status }),
+    };
 
-    const paginated = await this.repository.searchByName(normalizedQuery, { page, limit });
+    const paginated = await this.repository.searchByKeyword(keyword, searchOptions);
     return {
       ...paginated,
       data: paginated.data.map((user) => toPublic(user)),

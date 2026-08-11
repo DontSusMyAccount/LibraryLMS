@@ -22,7 +22,9 @@ export interface IFindUserReturnType {
 }
 
 export interface IListUsersQuery {
-  q: string;
+  q?: string;
+  role?: UserRole;
+  status?: UserStatus;
   page?: number;
   limit?: number;
 }

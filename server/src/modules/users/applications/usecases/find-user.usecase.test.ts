@@ -28,7 +28,7 @@ function createRepository(user: UserRecord | null): IUserRepository {
     findByStudentOrStaffId: async (studentOrStaffId) =>
       user && user.studentOrStaffId === studentOrStaffId ? user : null,
     findByEmail: async (email) => (user && user.email === email ? user : null),
-    searchByName: async () => ({ data: [], total: 0, page: 1, limit: 12, totalPages: 0 }),
+    searchByKeyword: async () => ({ data: [], total: 0, page: 1, limit: 12, totalPages: 0 }),
     branchExists: async () => true,
     create: async () => buildUser(),
     findById: async () => null,

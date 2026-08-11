@@ -74,7 +74,8 @@ describe("user.schema", () => {
     expect(Value.Check(userPublicSchema, buildMember())).toBe(true);
   });
 
-  it("searchUsersQuerySchema ยอมรับ query ที่ถูกต้องและบังคับ q", () => {
+  it("searchUsersQuerySchema ยอมรับ query ที่ถูกต้อง และ q เป็น optional (โหลดตารางเต็มได้)", () => {
+    expect(Value.Check(searchUsersQuerySchema, {})).toBe(true);
     expect(Value.Check(searchUsersQuerySchema, { q: "นิสิต" })).toBe(true);
     expect(Value.Check(searchUsersQuerySchema, { q: "นิสิต", page: 2, limit: 25 })).toBe(true);
     expect(Value.Check(searchUsersQuerySchema, { q: "" })).toBe(false);

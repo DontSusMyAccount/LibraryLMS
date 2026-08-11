@@ -24,13 +24,17 @@ export interface UpdateUserInput {
   branchId?: string;
 }
 
+export interface SearchUsersOptions {
+  page: number;
+  limit: number;
+  role?: UserRole;
+  status?: UserStatus;
+}
+
 export interface IUserRepository {
   findByStudentOrStaffId(studentOrStaffId: string): Promise<UserRecord | null>;
   findByEmail(email: string): Promise<UserRecord | null>;
-  searchByName(
-    query: string,
-    options: { page: number; limit: number },
-  ): Promise<Paginated<UserRecord>>;
+  searchByKeyword(query: string, options: SearchUsersOptions): Promise<Paginated<UserRecord>>;
   branchExists(id: string): Promise<boolean>;
   create(input: CreateUserInput): Promise<UserRecord>;
   findById(id: string): Promise<UserRecord | null>;

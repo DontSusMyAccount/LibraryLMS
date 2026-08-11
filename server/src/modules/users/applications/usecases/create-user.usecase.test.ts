@@ -68,7 +68,7 @@ function createRepository(
       options.existingByEmail && options.existingByEmail.email === email
         ? options.existingByEmail
         : null,
-    searchByName: async () => ({ data: [], total: 0, page: 1, limit: 12, totalPages: 0 }),
+    searchByKeyword: async () => ({ data: [], total: 0, page: 1, limit: 12, totalPages: 0 }),
     branchExists,
     create,
     findById: async () => null,

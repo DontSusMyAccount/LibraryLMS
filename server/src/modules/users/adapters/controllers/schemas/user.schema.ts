@@ -43,7 +43,7 @@ export const userPublicSchema = Type.Object({
 });
 
 export const searchUsersQuerySchema = Type.Object({
-  q: Type.String({ minLength: 1 }),
+  q: Type.Optional(Type.String({ minLength: 1 })),
   role: Type.Optional(userRoleSchema),
   status: Type.Optional(userStatusSchema),
   page: Type.Optional(Type.Number({ minimum: 1, default: DEFAULT_PAGE })),
