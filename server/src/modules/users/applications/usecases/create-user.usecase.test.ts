@@ -71,6 +71,8 @@ function createRepository(
     searchByName: async () => ({ data: [], total: 0, page: 1, limit: 12, totalPages: 0 }),
     branchExists,
     create,
+    findById: async () => null,
+    update: async () => buildUser(),
   };
   return { repository, create, branchExists };
 }

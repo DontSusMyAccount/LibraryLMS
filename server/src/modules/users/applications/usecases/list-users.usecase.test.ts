@@ -48,6 +48,8 @@ function createRepository(records: UserRecord[]): IUserRepository {
     },
     branchExists: async () => true,
     create: async () => buildUser(),
+    findById: async () => null,
+    update: async () => buildUser(),
   };
 }
 

@@ -1,4 +1,4 @@
-import type { MemberType, Paginated, UserPublic, UserRole } from "../../../../shared";
+import type { MemberType, Paginated, UserPublic, UserRole, UserStatus } from "../../../../shared";
 
 export interface ICreateUserCommand {
   email: string;
@@ -28,3 +28,17 @@ export interface IListUsersQuery {
 }
 
 export type IListUsersReturnType = Paginated<UserPublic>;
+
+export interface IUpdateUserCommand {
+  fullName?: string;
+  role?: UserRole;
+  status?: UserStatus;
+  memberType?: MemberType;
+  studentOrStaffId?: string;
+  phone?: string;
+  branchId?: string;
+}
+
+export interface IUpdateUserReturnType {
+  user: UserPublic;
+}
