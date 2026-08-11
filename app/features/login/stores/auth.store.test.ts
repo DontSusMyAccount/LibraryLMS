@@ -120,6 +120,24 @@ describe("auth.store signIn", () => {
     expect(useAuthStore.getState().errorMessage).toBe("บัญชีผู้ใช้ถูกระงับใช้งาน");
   });
 
+  it("next-auth v5 beta ตอบ HTTP 200 พร้อม error (CredentialsSignin) → ยังถือว่า signIn ผิด ไม่ redirect", async () => {
+    mocks.nextAuthSignIn.mockResolvedValue({
+      ok: true,
+      error: "CredentialsSignin",
+      code: "invalid_credentials",
+      status: 200,
+      url: "http://localhost:3000/login?error=CredentialsSignin&code=invalid_credentials",
+    });
+    const router = { push: mocks.routerPush };
+
+    const ok = await useAuthStore.getState().signIn(CREDENTIALS, router);
+
+    expect(ok).toBe(false);
+    expect(useAuthStore.getState().errorMessage).toBe("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    expect(useAuthStore.getState().session).toBeNull();
+    expect(mocks.routerPush).not.toHaveBeenCalled();
+  });
+
   it("network error → fallback ข้อความไทย", async () => {
     mocks.nextAuthSignIn.mockRejectedValue(new Error("network down"));
     const router = { push: mocks.routerPush };

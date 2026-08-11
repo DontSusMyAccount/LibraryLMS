@@ -109,7 +109,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
         redirect: false,
       })) as SignInResult;
 
-      if (result == null || result.ok !== true) {
+      if (result == null || result.error != null || result.ok !== true) {
         set({ isSubmitting: false, errorMessage: toSignInErrorMessage(result) });
         return false;
       }

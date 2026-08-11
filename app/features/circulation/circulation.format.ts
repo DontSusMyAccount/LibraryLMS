@@ -8,8 +8,9 @@ export function formatThaiDate(value: string | Date): string {
   return `${monthLabel} ${buddhistYear}`;
 }
 
-export function formatThaiShortDate(value: string): string {
-  return format(parseISO(value), "d MMM", { locale: th });
+export function formatThaiShortDate(value: string | Date): string {
+  const date = typeof value === "string" ? parseISO(value) : value;
+  return format(date, "d MMM", { locale: th });
 }
 
 export function formatBath(value: number): string {
