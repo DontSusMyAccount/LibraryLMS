@@ -1,11 +1,12 @@
 import { defineConfig } from "vitest/config";
 
-import baseConfig from "./vitest.config";
-
 export default defineConfig({
-  ...baseConfig,
   test: {
-    environment: baseConfig.test?.environment ?? "node",
-    include: ["server/src/__tests__/**/*.test.ts"],
+    environment: "node",
+    include: ["server/src/__tests__/integration/**/*.test.ts"],
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
+    // shared real DB — run files sequentially to avoid cross-file data collisions
+    fileParallelism: false,
   },
 });
