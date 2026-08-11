@@ -1,8 +1,7 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { Elysia } from "elysia";
 import { describe, expect, it } from "vitest";
 
-import { toHttpError } from "../../libs/http-error.factory";
+import { buildApp } from "../../app.factory";
 import { createAppModule } from "../../modules/app.module";
 
 const JWT_SECRET = "jwt-secret-".padEnd(32, "x");
@@ -16,17 +15,7 @@ const deps = {
   uploadRoot: "uploads",
 };
 
-function buildApp() {
-  return new Elysia()
-    .onError(({ code, error, set }) => {
-      const httpError = toHttpError(error, code);
-      set.status = httpError.statusCode;
-      return httpError.body;
-    })
-    .use(createAppModule(deps));
-}
-
-const app = buildApp();
+const app = buildApp(createAppModule(deps));
 
 async function handleRequest(path: string, init?: RequestInit) {
   const response = await app.handle(new Request(`http://localhost${path}`, init));
@@ -43,6 +32,14 @@ describe("app boot wiring", () => {
 
   it("route ที่ต้อง auth แต่ไม่มี header => 401 envelope", async () => {
     const { status, body } = await handleRequest("/auth/me");
+
+    expect(status).toBe(401);
+    expect(body.success).toBe(false);
+    expect(typeof body.error).toBe("string");
+  });
+
+  it("users route ที่ต้อง auth แต่ไม่มี header => 401 envelope (regression: onError order)", async () => {
+    const { status, body } = await handleRequest("/users/search?q=test");
 
     expect(status).toBe(401);
     expect(body.success).toBe(false);
