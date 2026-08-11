@@ -95,7 +95,7 @@ export const initialCirculationState = {
 function buildMemberCard(
   user: UserPublic,
   activeLoans: ActiveLoanItem[],
-  finesTotal: number,
+  finesTotal: number | null,
   maxRenewals: number,
 ): MemberCardData {
   return {

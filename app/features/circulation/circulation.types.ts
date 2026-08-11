@@ -12,7 +12,7 @@ export interface MemberCardData {
   activeLoans: ActiveLoanItem[];
   activeLoansCount: number;
   overdueCount: number;
-  finesTotal: number;
+  finesTotal: number | null;
   isSuspended: boolean;
   maxRenewals: number;
 }

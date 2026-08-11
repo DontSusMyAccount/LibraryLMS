@@ -119,6 +119,20 @@ describe("circulation.store — ค้นหาสมาชิกและกา
 
     expect(useCirculationStore.getState().selectedMember?.isSuspended).toBe(true);
   });
+
+  it("ไม่มี endpoint ค่าปรับ (fetchMemberFinesTotal คืน null) → finesTotal เป็น null แต่การ์ดอื่นยังโหลดปกติ", async () => {
+    mocks.loadActiveLoans.mockResolvedValue([makeLoanItem()]);
+    mocks.fetchMemberFinesTotal.mockResolvedValue(null);
+    mocks.fetchMemberMaxRenewals.mockResolvedValue(2);
+
+    await useCirculationStore.getState().selectMember(makeUser());
+
+    const member: MemberCardData | null = useCirculationStore.getState().selectedMember;
+    expect(member?.finesTotal).toBeNull();
+    expect(member?.activeLoansCount).toBe(1);
+    expect(member?.maxRenewals).toBe(2);
+    expect(useCirculationStore.getState().checkoutError).toBeNull();
+  });
 });
 
 describe("circulation.store — ตะกร้ายืม", () => {
@@ -255,5 +269,23 @@ describe("circulation.store — ต่ออายุ (renew)", () => {
     expect(useCirculationStore.getState().canRenew("loan-full")).toBe(false);
     expect(useCirculationStore.getState().canRenew("loan-reserved")).toBe(false);
     expect(useCirculationStore.getState().canRenew("loan-ok")).toBe(true);
+  });
+
+  it("renew ล้มเหลว (backend ปฏิเสธ) → checkoutError ตั้งข้อความไทย เพื่อแสดงใน tab รายการยืมค้าง", async () => {
+    mocks.loadActiveLoans.mockResolvedValue([makeLoanItem()]);
+    mocks.fetchMemberFinesTotal.mockResolvedValue(0);
+    mocks.fetchMemberMaxRenewals.mockResolvedValue(2);
+    await useCirculationStore.getState().selectMember(makeUser());
+
+    mocks.renew.mockRejectedValue(
+      new Error("ไม่สามารถต่ออายุได้ เนื่องจากมีคิวจองหนังสือเล่มนี้อยู่"),
+    );
+
+    const ok = await useCirculationStore.getState().renew("loan-1");
+
+    expect(ok).toBe(false);
+    expect(useCirculationStore.getState().checkoutError).toBe(
+      "ไม่สามารถต่ออายุได้ เนื่องจากมีคิวจองหนังสือเล่มนี้อยู่",
+    );
   });
 });

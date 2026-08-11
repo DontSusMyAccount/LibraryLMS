@@ -2,6 +2,7 @@ import type {
   CheckinResult,
   CheckoutResult,
   MemberType,
+  PaginatedResponse,
   ReservationStatus,
   UserPublic,
   UserRole,
@@ -44,8 +45,8 @@ export async function loadActiveLoans(userId: string): Promise<ActiveLoanItem[]>
   });
 }
 
-export async function fetchMemberFinesTotal(): Promise<number> {
-  return 0;
+export async function fetchMemberFinesTotal(): Promise<number | null> {
+  return null;
 }
 
 export async function fetchMemberMaxRenewals(
@@ -73,11 +74,11 @@ export async function recall(loanId: string): Promise<CheckoutResult> {
 
 async function fetchActiveReservedBookIds(): Promise<Set<string>> {
   try {
-    const result = await edenRequest(
-      await eden.reservations.get({ query: { page: 1, limit: FETCH_LIMIT } }),
+    const reservations = await fetchAllPages(async (page) =>
+      edenRequest(await eden.reservations.get({ query: { page, limit: FETCH_LIMIT } })),
     );
     const reserved = new Set<string>();
-    for (const reservation of result.data) {
+    for (const reservation of reservations) {
       if (ACTIVE_RESERVATION_STATUSES.has(reservation.status)) {
         reserved.add(reservation.bookId);
       }
@@ -90,11 +91,11 @@ async function fetchActiveReservedBookIds(): Promise<Set<string>> {
 
 async function fetchCopyBookIdMap(): Promise<Map<string, string>> {
   try {
-    const result = await edenRequest(
-      await eden.catalog.books.get({ query: { page: 1, limit: FETCH_LIMIT } }),
+    const books = await fetchAllPages(async (page) =>
+      edenRequest(await eden.catalog.books.get({ query: { page, limit: FETCH_LIMIT } })),
     );
     const map = new Map<string, string>();
-    for (const book of result.data) {
+    for (const book of books) {
       for (const copy of book.copies) {
         map.set(copy.id, book.id);
       }
@@ -103,4 +104,19 @@ async function fetchCopyBookIdMap(): Promise<Map<string, string>> {
   } catch {
     return new Map<string, string>();
   }
+}
+
+async function fetchAllPages<T>(
+  requestPage: (page: number) => Promise<PaginatedResponse<T>>,
+): Promise<T[]> {
+  const collected: T[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    const result = await requestPage(page);
+    collected.push(...result.data);
+    totalPages = result.totalPages;
+    page += 1;
+  } while (page <= totalPages);
+  return collected;
 }

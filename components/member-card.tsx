@@ -6,6 +6,7 @@ import {
   ReceiptTextIcon,
   RotateCcwIcon,
   BookUserIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
 
 import type { MemberCardData } from "@/app/features/circulation/circulation.types";
@@ -94,10 +95,17 @@ export function MemberCard({ member, className }: MemberCardProps) {
             ค่าปรับ
           </dt>
           <dd className="mt-1 text-title font-semibold tabular-nums text-foreground">
-            {formatBath(finesTotal)}
+            {finesTotal === null ? "-" : formatBath(finesTotal)}
           </dd>
         </div>
       </dl>
+
+      {finesTotal === null && (
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-accent-amber/30 bg-accent-amber/10 px-3 py-2.5 text-sm text-ink-body">
+          <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-accent-amber" />
+          <p>ไม่สามารถโหลดยอดค่าปรับได้ในขณะนี้</p>
+        </div>
+      )}
 
       <p className="mt-4 flex items-center gap-1.5 text-caption text-muted-foreground">
         <BadgeCheckIcon className="size-3.5 text-brand-500" />

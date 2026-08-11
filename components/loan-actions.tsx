@@ -2,7 +2,7 @@
 
 import { format, parseISO } from "date-fns";
 import { th } from "date-fns/locale";
-import { CalendarClockIcon, RotateCcwIcon, SirenIcon } from "lucide-react";
+import { CalendarClockIcon, RotateCcwIcon, SirenIcon, TriangleAlertIcon } from "lucide-react";
 
 import type { ActiveLoanItem } from "@/app/features/circulation/circulation.types";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ interface LoanActionsProps {
   canRenew: (loanId: string) => boolean;
   onRenew: (loanId: string) => Promise<boolean>;
   onRecall: (loanId: string) => Promise<boolean>;
+  errorMessage?: string | null;
   className?: string;
 }
 
@@ -38,6 +39,7 @@ export function LoanActions({
   canRenew,
   onRenew,
   onRecall,
+  errorMessage,
   className,
 }: LoanActionsProps) {
   return (
@@ -51,6 +53,17 @@ export function LoanActions({
           ต่ออายุหรือเรียกคืนหนังสือก่อนกำหนดของสมาชิกที่เลือก
         </p>
       </header>
+
+      {errorMessage != null && errorMessage !== "" && (
+        <div
+          data-slot="loan-actions-error"
+          role="status"
+          className="mb-4 flex items-start gap-2 rounded-lg border border-accent-amber/30 bg-accent-amber/10 px-3 py-2.5 text-sm text-ink-body"
+        >
+          <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-accent-amber" />
+          <p>{errorMessage}</p>
+        </div>
+      )}
 
       {isLoansLoading ? (
         <div className="flex flex-col gap-3">

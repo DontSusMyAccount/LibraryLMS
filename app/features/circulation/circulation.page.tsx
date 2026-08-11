@@ -247,6 +247,7 @@ export function CirculationPage() {
               canRenew={canRenew}
               onRenew={renew}
               onRecall={recall}
+              errorMessage={checkoutError}
             />
           ) : (
             <div className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-lg bg-card text-center shadow-card">
