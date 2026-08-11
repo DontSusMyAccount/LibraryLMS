@@ -67,12 +67,12 @@
 
 **Responses:**
 - `201` → `{ success: true, data: { id, email, fullName, role, status, ... } }`
+- `422` — validation ล้มเหลว (email format ผิด, password < 8 ตัว, ช่อง required ว่าง, **password > 72 bytes** — ตาม convention repo: `DomainError(message, 422)`)
 - `409` — email หรือ studentOrStaffId ซ้ำ (message ภาษาไทย: "อีเมลนี้ถูกใช้งานแล้ว" / "รหัสนักศึกษา/พนักงานนี้ถูกใช้งานแล้ว")
 - `404` — branchId ไม่มีในระบบ
-- `400` — password เกิน 72 bytes (bcrypt limit: "รหัสผ่านยาวเกินไป (สูงสุด 72 ตัวอักษร)")
-- `422` — validation ล้มเหลว (email format ผิด, password < 8 ตัว, ช่อง required ว่าง)
 
-**Logic:** bcrypt hash (cost 10 — เท่า seed) + `status: "active"` เสมอตอนสร้าง
+**Logic:** bcryptjs hash (cost 12 — เท่า seed) + `status: "active"` เสมอตอนสร้าง
+(เช็ค byte length ด้วย `Buffer.byteLength(password, "utf8") > 72` → 400 — TypeBox maxLength นับตัวอักษรไม่ใช่ bytes)
 
 ### 3.3 PATCH /users/:id
 
@@ -191,7 +191,7 @@ app/_shared/lib/route-guard.test.ts
 
 | ไฟล์ | กรณี |
 | ---- | ---- |
-| `create-user.usecase.test.ts` | สำเร็จ (hash + active), email ซ้ำ → 409, studentOrStaffId ซ้ำ → 409, branchId ไม่มี → 404, password >72 bytes → 400 |
+| `create-user.usecase.test.ts` | สำเร็จ (hash + active), email ซ้ำ → 409, studentOrStaffId ซ้ำ → 409, branchId ไม่มี → 404, password >72 bytes → 422 |
 | `update-user.usecase.test.ts` | สำเร็จ, actorId==id เปลี่ยนบทบาท/สถานะ → 403, studentOrStaffId ซ้ำ → 409, not found → 404 |
 | `user.schema.test.ts` | validation 422: email format ผิด, password <8 |
 | `user.controller.test.ts` | routes รับ/ส่ง + guard role ถูกต้อง |
