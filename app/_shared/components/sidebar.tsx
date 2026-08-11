@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   ListChecksIcon,
   LogOutIcon,
+  UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -39,6 +40,7 @@ const NAV_GROUPS: NavGroupDef[] = [
       { label: "แคตตาล็อก", href: "/catalog", icon: BookOpenTextIcon },
       { label: "เคาน์เตอร์ยืม-คืน", href: "/circulation", icon: ArrowLeftRightIcon },
       { label: "คิวจอง", href: "/reservations", icon: ListChecksIcon },
+      { label: "สมาชิก", href: "/members", icon: UsersIcon },
     ],
   },
 ];
