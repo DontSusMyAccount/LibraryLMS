@@ -46,6 +46,8 @@ function createRepository(records: UserRecord[]): IUserRepository {
         totalPages: Math.ceil(filtered.length / DEFAULT_PAGE_SIZE),
       };
     },
+    branchExists: async () => true,
+    create: async () => buildUser(),
   };
 }
 
