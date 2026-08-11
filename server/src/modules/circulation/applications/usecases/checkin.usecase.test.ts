@@ -253,6 +253,40 @@ describe("CheckinUsecase", () => {
     expect(state.copies[0]!.status).toBe("available");
   });
 
+  it("นาฬิกา server ช้ากว่า DB (returnedAt < borrowedAt) → ยังคืนสำเร็จ โดย clamp returnedAt ≥ borrowedAt", async () => {
+    const borrowedAt = "2026-08-06T00:00:03.000Z";
+    const state = buildState({
+      loans: [
+        {
+          id: "loan-1",
+          copyId: "c-1",
+          userId: "u-member",
+          borrowedAt,
+          dueAt: "2026-08-20T00:00:00.000Z",
+          status: "active",
+          renewedCount: 0,
+          loanPeriodDays: 14,
+          dailyFineRate: 5,
+          createdAt: borrowedAt,
+        },
+      ],
+    });
+    const usecase = new CheckinUsecase(createLoanRepository(state), createAuditRepository());
+
+    const result = await usecase.execute({
+      command: { copyCode: "BK-001" },
+      actorId: "u-librarian",
+      now: new Date("2026-08-06T00:00:00.000Z"),
+    });
+
+    expect(result.loan.status).toBe("returned");
+    const returnedAtMs = new Date(result.loan.returnedAt as string).getTime();
+    // DB เก็บ microsecond → JS Date truncate เหลือ ms → ต้องเผื่ออย่างน้อย 1ms
+    expect(returnedAtMs).toBeGreaterThanOrEqual(new Date(borrowedAt).getTime() + 1);
+    expect(result.loan.returnedAt).toBe(new Date(new Date(borrowedAt).getTime() + 1).toISOString());
+    expect(state.copies[0]!.status).toBe("available");
+  });
+
   it("ไม่พบรายการยืมที่ยัง active ของสำเนานี้ → DomainConflictError", async () => {
     const state = buildState({ loans: [] });
     const usecase = new CheckinUsecase(createLoanRepository(state), createAuditRepository());

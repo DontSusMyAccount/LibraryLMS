@@ -46,7 +46,13 @@ export class CheckinUsecase {
     const policy = member ? resolvePolicyByRole(policies, member.role, member.memberType) : null;
     const gracePeriodDays = policy?.gracePeriodDays ?? 0;
 
-    const returnedAt = now.toISOString();
+    // ป้องกัน clock skew ระหว่าง server กับ DB (DB เป็นตัวกำหนด borrowed_at):
+    // ถ้านาฬิกา server ช้ากว่า DB returnedAt จะย้อนหลัง → ละเมิด
+    // chk_loans_returned_after_borrow (returned_at >= borrowed_at) → clamp ไว้ที่ borrowedAt
+    // เผื่อ +1ms เพราะ DB เก็บ microsecond แต่ JS Date ตัดเหลือ ms → borrowed_at จริงใน DB
+    // อาจมากกว่า Date ที่ truncate แล้วได้สูงสุดเกือบ 1ms
+    const borrowedAtMs = new Date(loan.borrowedAt).getTime();
+    const returnedAt = new Date(Math.max(now.getTime(), borrowedAtMs + 1)).toISOString();
     const returned = await this.loans.returnLoan(loan.id, {
       status: "returned",
       returnedAt,

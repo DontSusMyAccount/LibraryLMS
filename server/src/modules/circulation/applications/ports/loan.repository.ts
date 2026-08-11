@@ -10,8 +10,6 @@ import type {
   UserStatus,
 } from "../../../../shared";
 
-export const loanRepositoryToken = Symbol("LoanRepository").toString();
-
 export interface IMemberInfo {
   id: string;
   role: UserRole;
@@ -63,3 +61,5 @@ export interface ILoanRepository {
   hasActiveReservation(bookId: string): Promise<boolean>;
   getSystemSetting(key: string): Promise<unknown>;
 }
+
+export const loanRepositoryToken = Symbol("LoanRepository").toString();
