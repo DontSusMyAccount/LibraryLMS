@@ -1,4 +1,19 @@
-import type { Paginated, UserPublic } from "../../../../shared";
+import type { MemberType, Paginated, UserPublic, UserRole } from "../../../../shared";
+
+export interface ICreateUserCommand {
+  email: string;
+  fullName: string;
+  role: UserRole;
+  password: string;
+  memberType?: MemberType;
+  studentOrStaffId?: string;
+  phone?: string;
+  branchId?: string;
+}
+
+export interface ICreateUserReturnType {
+  user: UserPublic;
+}
 
 export type IFindUserCommand = { email: string } | { studentOrStaffId: string };
 
