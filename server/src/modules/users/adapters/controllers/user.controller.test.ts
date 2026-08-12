@@ -30,6 +30,8 @@ const STUDENT_HEADERS = {
   "x-fullname": encodeURIComponent("นิสิตคนหนึ่ง"),
 };
 
+const VALID_USER_ID = "123e4567-e89b-12d3-a456-426614174000";
+
 function buildPublicUser(overrides: Partial<UserPublic> = {}): UserPublic {
   return {
     id: "u-1",
@@ -114,7 +116,7 @@ describe("UsersController routes", () => {
     const body = { fullName: "ชื่อใหม่", status: "suspended" };
 
     const res = await app.handle(
-      jsonRequest("/users/u-1", {
+      jsonRequest(`/users/${VALID_USER_ID}`, {
         method: "PATCH",
         headers: ADMIN_HEADERS,
         body: JSON.stringify(body),
@@ -122,7 +124,11 @@ describe("UsersController routes", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(execute).toHaveBeenCalledWith({ command: body, id: "u-1", actorId: "admin-1" });
+    expect(execute).toHaveBeenCalledWith({
+      command: body,
+      id: VALID_USER_ID,
+      actorId: "admin-1",
+    });
   });
 
   it("POST /users ปฏิเสธ role ที่ไม่อนุญาต (student → 403) โดยไม่เรียก usecase", async () => {
@@ -176,7 +182,7 @@ describe("UsersController routes", () => {
 
   it("PATCH /users/:id ปฏิเสธ body ว่าง → 422", async () => {
     const res = await app.handle(
-      jsonRequest("/users/u-1", {
+      jsonRequest(`/users/${VALID_USER_ID}`, {
         method: "PATCH",
         headers: ADMIN_HEADERS,
         body: "{}",

@@ -27,6 +27,10 @@ FormatRegistry.Set("email", (value) =>
   ),
 );
 
+FormatRegistry.Set("uuid", (value) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value),
+);
+
 function unionConstValues(schema: unknown): unknown[] {
   return (schema as { anyOf: Array<{ const: unknown }> }).anyOf.map((item) => item.const);
 }
@@ -81,9 +85,16 @@ describe("user.schema", () => {
     expect(Value.Check(searchUsersQuerySchema, { q: "" })).toBe(false);
   });
 
-  it("findUserParamsSchema ต้องการ id ที่ไม่ว่าง", () => {
-    expect(Value.Check(findUserParamsSchema, { id: "610012345" })).toBe(true);
+  it("findUserParamsSchema ต้องการ id ที่ไม่ว่างและเป็น uuid ที่ถูกต้อง", () => {
+    expect(
+      Value.Check(findUserParamsSchema, {
+        id: "123e4567-e89b-12d3-a456-426614174000",
+      }),
+    ).toBe(true);
     expect(Value.Check(findUserParamsSchema, { id: "" })).toBe(false);
+    expect(Value.Check(findUserParamsSchema, { id: "610012345" })).toBe(false);
+    expect(Value.Check(findUserParamsSchema, { id: "not-a-uuid" })).toBe(false);
+    expect(Value.Check(findUserParamsSchema, { id: "123e4567-e89b-12d3-a456" })).toBe(false);
   });
 
   it("find-user response envelope ตรวจ { success: true, data } และ schema ไม่มี passwordHash", () => {

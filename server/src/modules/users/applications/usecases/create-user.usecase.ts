@@ -11,7 +11,7 @@ import type { ICreateUserCommand, ICreateUserReturnType } from "../schemas/user-
 const DUPLICATE_EMAIL_MESSAGE = "อีเมลนี้ถูกใช้งานแล้ว";
 const DUPLICATE_ID_MESSAGE = "รหัสนักศึกษา/พนักงานนี้ถูกใช้งานแล้ว";
 const BRANCH_NOT_FOUND_MESSAGE = "ไม่พบสาขาที่เลือก";
-const PASSWORD_TOO_LONG_MESSAGE = "รหัสผ่านยาวเกินไป (สูงสุด 72 ตัวอักษร)";
+const PASSWORD_TOO_LONG_MESSAGE = "รหัสผ่านยาวเกินไป (สูงสุด 72 ไบต์)";
 
 const BCRYPT_COST = 12;
 const PASSWORD_MAX_BYTES = 72;

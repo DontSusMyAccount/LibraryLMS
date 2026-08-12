@@ -53,7 +53,7 @@ export const searchUsersQuerySchema = Type.Object({
 });
 
 export const findUserParamsSchema = Type.Object({
-  id: Type.String({ minLength: 1 }),
+  id: Type.String({ format: "uuid", minLength: 1 }),
 });
 
 export const createUserBodySchema = Type.Object(

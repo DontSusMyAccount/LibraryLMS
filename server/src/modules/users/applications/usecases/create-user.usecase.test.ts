@@ -158,7 +158,7 @@ describe("CreateUserUsecase", () => {
     expect(error).toBeInstanceOf(DomainError);
     expect(error).toMatchObject({
       statusCode: 422,
-      message: "รหัสผ่านยาวเกินไป (สูงสุด 72 ตัวอักษร)",
+      message: "รหัสผ่านยาวเกินไป (สูงสุด 72 ไบต์)",
     });
     expect(create).not.toHaveBeenCalled();
   });

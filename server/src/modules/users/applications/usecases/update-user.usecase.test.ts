@@ -95,7 +95,7 @@ describe("UpdateUserUsecase", () => {
     expect(badPasswordCommand).toBeDefined();
   });
 
-  it("actorId == id และเปลี่ยน role/status → DomainForbiddenError 403 ก่อนเรียก repo", async () => {
+  it("actorId == id และเปลี่ยน role เป็นค่าอื่น → DomainForbiddenError 403 (เจอ user ก่อนแล้ว ไม่ update)", async () => {
     const { repository, findById, update } = createRepository({ existingUser: buildUser() });
     const usecase = new UpdateUserUsecase(repository);
 
@@ -108,7 +108,21 @@ describe("UpdateUserUsecase", () => {
       statusCode: 403,
       message: "ไม่สามารถเปลี่ยนสถานะ/บทบาทของตัวเองได้",
     });
-    expect(findById).not.toHaveBeenCalled();
+    expect(findById).toHaveBeenCalledTimes(1);
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("actorId == id และเปลี่ยน status เป็นค่าอื่น → DomainForbiddenError 403", async () => {
+    const { repository, findById, update } = createRepository({ existingUser: buildUser() });
+    const usecase = new UpdateUserUsecase(repository);
+
+    const error = await usecase
+      .execute({ command: { status: "suspended" }, id: "u-1", actorId: "u-1" })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(DomainForbiddenError);
+    expect(error).toMatchObject({ statusCode: 403 });
+    expect(findById).toHaveBeenCalledTimes(1);
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -123,6 +137,36 @@ describe("UpdateUserUsecase", () => {
     });
 
     expect(result.user.fullName).toBe("ชื่อใหม่");
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it("actorId == id ส่ง role/status ค่าเดิม (ไม่เปลี่ยนจริง) → ผ่าน ไม่ 403 (กรณี UI ส่ง role+status เสมอ)", async () => {
+    const { repository, update } = createRepository({ existingUser: buildUser() });
+    const usecase = new UpdateUserUsecase(repository);
+
+    const result = await usecase.execute({
+      command: { fullName: "ชื่อใหม่", role: "student", status: "active" },
+      id: "u-1",
+      actorId: "u-1",
+    });
+
+    expect(result.user.fullName).toBe("ชื่อใหม่");
+    expect(result.user.role).toBe("student");
+    expect(result.user.status).toBe("active");
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it("actorId == id ส่ง role ค่าเดิม (role เดียวกัน) → ผ่าน ไม่ 403", async () => {
+    const { repository, update } = createRepository({ existingUser: buildUser() });
+    const usecase = new UpdateUserUsecase(repository);
+
+    const result = await usecase.execute({
+      command: { role: "student" },
+      id: "u-1",
+      actorId: "u-1",
+    });
+
+    expect(result.user.role).toBe("student");
     expect(update).toHaveBeenCalledTimes(1);
   });
 

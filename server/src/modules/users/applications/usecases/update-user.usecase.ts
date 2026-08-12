@@ -38,15 +38,17 @@ export class UpdateUserUsecase {
       throw new DomainError(EMPTY_UPDATE_MESSAGE, 422);
     }
 
-    const isSelfChangingOwnRoleOrStatus =
-      actorId === id && ("role" in command || "status" in command);
-    if (isSelfChangingOwnRoleOrStatus) {
-      throw new DomainForbiddenError(SELF_CHANGE_MESSAGE);
-    }
-
     const user = await this.repository.findById(id);
     if (!user) {
       throw new DomainNotFoundError(USER_NOT_FOUND_MESSAGE);
+    }
+
+    const isSelfChangingOwnRoleOrStatus =
+      actorId === id &&
+      ((command.role !== undefined && command.role !== user.role) ||
+        (command.status !== undefined && command.status !== user.status));
+    if (isSelfChangingOwnRoleOrStatus) {
+      throw new DomainForbiddenError(SELF_CHANGE_MESSAGE);
     }
 
     if (command.studentOrStaffId !== undefined) {
