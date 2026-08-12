@@ -66,7 +66,7 @@
 ```
 
 **Responses:**
-- `201` → `{ success: true, data: { id, email, fullName, role, status, ... } }`
+- `200` → `{ success: true, data: { id, email, fullName, role, status, ... } }`
 - `422` — validation ล้มเหลว (email format ผิด, password < 8 ตัว, ช่อง required ว่าง, **password > 72 bytes** — ตาม convention repo: `DomainError(message, 422)`)
 - `409` — email หรือ studentOrStaffId ซ้ำ (message ภาษาไทย: "อีเมลนี้ถูกใช้งานแล้ว" / "รหัสนักศึกษา/พนักงานนี้ถูกใช้งานแล้ว")
 - `404` — branchId ไม่มีในระบบ
