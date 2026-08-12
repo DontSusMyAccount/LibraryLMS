@@ -95,7 +95,7 @@ export const ADMIN = {
 } as const;
 
 export const VICTIM = {
-  id: "u-victim-9999",
+  id: "00000000-0000-4000-8000-000000000001",
   role: "student",
   status: "active",
 } as const;
