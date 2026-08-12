@@ -2,7 +2,7 @@ import "reflect-metadata";
 
 import { and, asc, count, eq, ilike, or, type SQL } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { PostgresError } from "postgres";
+import postgres from "postgres";
 import { inject, injectable } from "tsyringe";
 
 import { DomainConflictError, DomainNotFoundError } from "../../../../domains/errors";
@@ -15,6 +15,8 @@ import {
   type SearchUsersOptions,
   type UpdateUserInput,
 } from "../../applications/ports/user.repository";
+
+const { PostgresError } = postgres;
 
 const DUPLICATE_EMAIL_MESSAGE = "อีเมลนี้ถูกใช้งานแล้ว";
 const DUPLICATE_ID_MESSAGE = "รหัสนักศึกษา/พนักงานนี้ถูกใช้งานแล้ว";
