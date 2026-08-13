@@ -8,6 +8,8 @@
 - Never commit `.env*` files. Never push commits — the user pushes manually.
 - Branch naming: `<type>/<short-description>`.
 
+  '''
+
 ## Architecture
 
 - Hexagonal: `app/` = Next.js frontend, `server/` = ElysiaJS backend (Bun),
