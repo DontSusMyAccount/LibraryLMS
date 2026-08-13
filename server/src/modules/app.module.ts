@@ -7,6 +7,7 @@ import { resolveCatalogControllers } from "./catalog/catalog.module";
 import { resolveLoanController } from "./circulation/circulation.module";
 import { registerAllModules } from "./di-registrations";
 import type { DiRegistrationDeps } from "./di-registrations";
+import { resolveMeController } from "./me/me.module";
 import { resolveReservationController } from "./reservations/reservations.module";
 import { resolveStorageController } from "./storage/storage.module";
 import { resolveUsersController } from "./users/users.module";
@@ -22,6 +23,7 @@ export function createAppModule(deps: AppModuleDeps) {
   const loanController = resolveLoanController();
   const reservationController = resolveReservationController();
   const storageController = resolveStorageController();
+  const meController = resolveMeController();
 
   return new Elysia()
     .get("/health", () => ({ success: true as const, data: { status: "ok" as const } }))
@@ -32,5 +34,6 @@ export function createAppModule(deps: AppModuleDeps) {
     .use(catalogControllers.category.getRoutes())
     .use(loanController.getRoutes())
     .use(reservationController.getRoutes())
-    .use(storageController.getRoutes());
+    .use(storageController.getRoutes())
+    .use(meController.getRoutes());
 }

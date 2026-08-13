@@ -22,7 +22,7 @@ export class CategoryController {
   getRoutes() {
     return new Elysia({ prefix: "/catalog" })
       .use(authPlugin({ jwtSecret: this.jwtSecret, internalSecret: this.internalSecret }))
-      .guard({ role: ["admin", "librarian"] }, (app) =>
+      .guard({ role: true }, (app) =>
         app.get("/categories", (() => this.list()) as unknown as () => Promise<never>, {
           response: {
             200: listCategoriesSuccessResponseSchema,
@@ -31,8 +31,7 @@ export class CategoryController {
           detail: {
             tags: ["Catalog"],
             summary: "รายการหมวดหมู่ (tree)",
-            description:
-              "หมายเหตุ: ควรเปิดให้ผู้ใช้ active ทุกคนเข้าถึงได้ในอนาคต แต่ตอนนี้ guard librarian/admin ก่อน",
+            description: "ทุก role ที่ active เข้าถึงได้ (ฝั่งผู้ยืมใช้กรองการค้นหา)",
           },
         }),
       );

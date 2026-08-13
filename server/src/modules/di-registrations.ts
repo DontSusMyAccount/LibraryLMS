@@ -5,6 +5,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { registerAuthModule } from "./auth/auth.module";
 import { registerCatalogModule } from "./catalog/catalog.module";
 import { registerCirculationModule } from "./circulation/circulation.module";
+import { registerMeModule } from "./me/me.module";
 import { registerReservationsModule } from "./reservations/reservations.module";
 import { registerStorageModule } from "./storage/storage.module";
 import type { StorageDriver } from "./storage/storage.module";
@@ -40,4 +41,5 @@ export function registerAllModules(deps: DiRegistrationDeps): void {
   registerCirculationModule(moduleDeps);
   registerReservationsModule(moduleDeps);
   registerStorageModule(storageDeps);
+  registerMeModule(moduleDeps);
 }

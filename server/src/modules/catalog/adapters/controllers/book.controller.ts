@@ -40,8 +40,9 @@ export class BookController {
   getRoutes() {
     return new Elysia({ prefix: "/catalog" })
       .use(authPlugin({ jwtSecret: this.jwtSecret, internalSecret: this.internalSecret }))
-      .guard({ role: ["admin", "librarian"] }, (app) =>
+      .guard({ role: true }, (app) =>
         app
+          // GET เปิดให้ทุก role ที่ active (ฝั่งผู้ยืมต้องค้นหาหนังสือได้)
           .get("/books", ({ query }) => this.list(query), {
             query: listBooksQuerySchema,
             response: {
@@ -51,17 +52,9 @@ export class BookController {
             detail: {
               tags: ["Catalog"],
               summary: "รายการหนังสือ (ค้นหา/กรองหมวด/แบ่งหน้า)",
-              description: "ค้นหาชื่อหรือผู้แต่งด้วย ILIKE รองรับภาษาไทย",
+              description:
+                "ค้นหาชื่อหรือผู้แต่งด้วย ILIKE รองรับภาษาไทย — ทุก role ที่ active เข้าถึงได้",
             },
-          })
-          .post("/books", ({ body, user }) => this.create(body, user.id), {
-            body: createBookBodySchema,
-            response: {
-              200: createBookSuccessResponseSchema,
-              404: catalogErrorResponseSchema,
-              409: catalogErrorResponseSchema,
-            },
-            detail: { tags: ["Catalog"], summary: "สร้างหนังสือใหม่" },
           })
           .get("/books/:id", ({ params }) => this.getById(params), {
             params: bookIdParamsSchema,
@@ -69,18 +62,35 @@ export class BookController {
               200: getBookSuccessResponseSchema,
               404: catalogErrorResponseSchema,
             },
-            detail: { tags: ["Catalog"], summary: "ดูรายละเอียดหนังสือพร้อมสำเนาทั้งหมด" },
-          })
-          .put("/books/:id", ({ params, body, user }) => this.update(params, body, user.id), {
-            params: bookIdParamsSchema,
-            body: updateBookBodySchema,
-            response: {
-              200: updateBookSuccessResponseSchema,
-              404: catalogErrorResponseSchema,
-              409: catalogErrorResponseSchema,
+            detail: {
+              tags: ["Catalog"],
+              summary: "ดูรายละเอียดหนังสือพร้อมสำเนาทั้งหมด",
+              description: "ทุก role ที่ active เข้าถึงได้",
             },
-            detail: { tags: ["Catalog"], summary: "แก้ไขข้อมูลหนังสือ" },
-          }),
+          })
+          // Mutation ยังจำกัดเฉพาะ admin/librarian
+          .guard({ role: ["admin", "librarian"] }, (adminApp) =>
+            adminApp
+              .post("/books", ({ body, user }) => this.create(body, user.id), {
+                body: createBookBodySchema,
+                response: {
+                  200: createBookSuccessResponseSchema,
+                  404: catalogErrorResponseSchema,
+                  409: catalogErrorResponseSchema,
+                },
+                detail: { tags: ["Catalog"], summary: "สร้างหนังสือใหม่" },
+              })
+              .put("/books/:id", ({ params, body, user }) => this.update(params, body, user.id), {
+                params: bookIdParamsSchema,
+                body: updateBookBodySchema,
+                response: {
+                  200: updateBookSuccessResponseSchema,
+                  404: catalogErrorResponseSchema,
+                  409: catalogErrorResponseSchema,
+                },
+                detail: { tags: ["Catalog"], summary: "แก้ไขข้อมูลหนังสือ" },
+              }),
+          ),
       );
   }
 

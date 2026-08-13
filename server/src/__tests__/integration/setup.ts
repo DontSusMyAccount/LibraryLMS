@@ -45,6 +45,11 @@ export interface TestContext {
 
 let seq = 0;
 
+function nextUnique(prefix: string): string {
+  seq += 1;
+  return `${prefix}-${Date.now().toString(36)}-${seq}`;
+}
+
 export async function bootstrapTestContext(): Promise<TestContext> {
   const env = parseEnv(process.env as Record<string, string | undefined>);
   const { client, db } = createDatabaseClient(env.DATABASE_URL);
@@ -96,13 +101,10 @@ export async function bootstrapTestContext(): Promise<TestContext> {
     request,
     adminToken,
     adminUser: data.user,
-    unique(prefix: string) {
-      seq += 1;
-      return `${prefix}-${Date.now().toString(36)}-${seq}`;
-    },
+    unique: nextUnique,
     rows,
     async createMember(prefix: string) {
-      const email = `${this.unique(prefix)}@library.test`;
+      const email = `${nextUnique(prefix)}@library.test`;
       const [{ id }] = await db
         .insert(users)
         .values({

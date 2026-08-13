@@ -47,4 +47,24 @@ describe("Suspend — บัญชีที่ถูกระงับใช้�
     expect(response.status).toBe(401);
     expect(response.body?.success).toBe(false);
   });
+
+  it("suspended student เรียก /me/loans (self-service) → 401", async () => {
+    const response = await request("/me/loans", {
+      headers: proxyHeaders({ ...STUDENT, status: "suspended" }),
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body?.success).toBe(false);
+  });
+
+  it("suspended student เรียก /me/checkout → 401", async () => {
+    const response = await request("/me/checkout", {
+      method: "POST",
+      headers: proxyHeaders({ ...STUDENT, status: "suspended" }),
+      body: JSON.stringify({ copyCode: "BK-001" }),
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body?.success).toBe(false);
+  });
 });

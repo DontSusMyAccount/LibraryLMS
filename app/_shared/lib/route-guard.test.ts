@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { MATCHER_PATHS, isProtectedPath, resolveRouteGuard } from "./route-guard";
+import {
+  MATCHER_PATHS,
+  isBackofficeRole,
+  isProtectedPath,
+  resolveHomeByRole,
+  resolveRouteGuard,
+} from "./route-guard";
 
 function matchesGlob(pattern: string, pathname: string): boolean {
   const wildcardSuffix = "/:path*";
@@ -20,6 +26,11 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/members/abc-123")).toBe(true);
   });
 
+  it("คืน true สำหรับหน้า /my-loans (ฝั่งผู้ยืม)", () => {
+    expect(isProtectedPath("/my-loans")).toBe(true);
+    expect(isProtectedPath("/my-loans/history")).toBe(true);
+  });
+
   it("คืน false สำหรับ /login", () => {
     expect(isProtectedPath("/login")).toBe(false);
   });
@@ -37,18 +48,61 @@ describe("isProtectedPath", () => {
   });
 });
 
+describe("isBackofficeRole", () => {
+  it("admin/librarian = backoffice role", () => {
+    expect(isBackofficeRole("admin")).toBe(true);
+    expect(isBackofficeRole("librarian")).toBe(true);
+  });
+
+  it("faculty/staff/student = ไม่ใช่ backoffice role", () => {
+    expect(isBackofficeRole("faculty")).toBe(false);
+    expect(isBackofficeRole("staff")).toBe(false);
+    expect(isBackofficeRole("student")).toBe(false);
+  });
+});
+
+describe("resolveHomeByRole", () => {
+  it("admin/librarian → /dashboard", () => {
+    expect(resolveHomeByRole("admin")).toBe("/dashboard");
+    expect(resolveHomeByRole("librarian")).toBe("/dashboard");
+  });
+
+  it("faculty/staff/student → /my-loans", () => {
+    expect(resolveHomeByRole("faculty")).toBe("/my-loans");
+    expect(resolveHomeByRole("staff")).toBe("/my-loans");
+    expect(resolveHomeByRole("student")).toBe("/my-loans");
+  });
+
+  it("undefined role (ไม่มีข้อมูล session) → /my-loans (safe fallback)", () => {
+    expect(resolveHomeByRole(undefined)).toBe("/my-loans");
+  });
+});
+
 describe("resolveRouteGuard", () => {
   it("redirect ไป /login เมื่อเข้าหน้า protected โดยยังไม่ login", () => {
     expect(resolveRouteGuard("/catalog", false)).toBe("/login");
     expect(resolveRouteGuard("/members", false)).toBe("/login");
+    expect(resolveRouteGuard("/my-loans", false)).toBe("/login");
   });
 
-  it("redirect ไป /dashboard เมื่อ login แล้วเข้า /login", () => {
-    expect(resolveRouteGuard("/login", true)).toBe("/dashboard");
+  it("login แล้วเข้า /login → redirect ตาม role (admin → /dashboard)", () => {
+    expect(resolveRouteGuard("/login", true, "admin")).toBe("/dashboard");
+    expect(resolveRouteGuard("/login", true, "librarian")).toBe("/dashboard");
   });
 
-  it("คืน null เมื่อ login แล้วเข้า protected path", () => {
-    expect(resolveRouteGuard("/catalog", true)).toBeNull();
+  it("login แล้วเข้า /login → redirect ตาม role (student → /my-loans)", () => {
+    expect(resolveRouteGuard("/login", true, "student")).toBe("/my-loans");
+    expect(resolveRouteGuard("/login", true, "faculty")).toBe("/my-loans");
+  });
+
+  it("คืน null เมื่อ login แล้วเข้า protected path ของตัวเอง", () => {
+    expect(resolveRouteGuard("/catalog", true, "admin")).toBeNull();
+    expect(resolveRouteGuard("/my-loans", true, "student")).toBeNull();
+  });
+
+  it("student เข้าหน้า backoffice → redirect กลับ /my-loans", () => {
+    expect(resolveRouteGuard("/catalog", true, "student")).toBe("/my-loans");
+    expect(resolveRouteGuard("/members", true, "faculty")).toBe("/my-loans");
   });
 
   it("คืน null เมื่อยังไม่ login เข้า /login", () => {
@@ -61,13 +115,14 @@ describe("resolveRouteGuard", () => {
 });
 
 describe("MATCHER_PATHS", () => {
-  it("ครอบ protected path ทั้ง 5 + /login", () => {
+  it("ครอบ protected path ทั้งหมด + /login", () => {
     expect(MATCHER_PATHS).toEqual([
       "/dashboard/:path*",
       "/catalog/:path*",
       "/circulation/:path*",
       "/reservations/:path*",
       "/members/:path*",
+      "/my-loans/:path*",
       "/login",
     ]);
   });
@@ -82,6 +137,7 @@ describe("MATCHER_PATHS", () => {
   it("matcher ครอบ protected path และ /login ตาม semantics ของ :path*", () => {
     expect(matchesGlob("/members/:path*", "/members")).toBe(true);
     expect(matchesGlob("/members/:path*", "/members/abc-123")).toBe(true);
+    expect(matchesGlob("/my-loans/:path*", "/my-loans")).toBe(true);
     expect(matchesGlob("/login", "/login")).toBe(true);
     expect(matchesGlob("/login", "/login/foo")).toBe(false);
   });

@@ -9,6 +9,7 @@ import {
 import { create } from "zustand";
 
 import { ROUTES } from "@/app/_shared/constants/routes";
+import { resolveHomeByRole } from "@/app/_shared/lib/route-guard";
 import { USER_ROLES, USER_STATUSES } from "@libsys/shared";
 import type { UserRole, UserStatus } from "@libsys/shared";
 
@@ -115,8 +116,10 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
       }
 
       const session = result.user != null ? { user: result.user } : await getSession();
-      set({ isSubmitting: false, session: toAuthUser(session?.user) ?? null });
-      router.push(ROUTES.DASHBOARD);
+      const authUser = toAuthUser(session?.user) ?? null;
+      set({ isSubmitting: false, session: authUser });
+      // session parse ไม่ได้ (edge case) → กลับไปหน้า dashboard ตามพฤติกรรมเดิม แทนการเดา role
+      router.push(authUser ? resolveHomeByRole(authUser.role) : ROUTES.DASHBOARD);
       return true;
     } catch {
       set({ isSubmitting: false, errorMessage: FALLBACK_SIGNIN_MESSAGE });

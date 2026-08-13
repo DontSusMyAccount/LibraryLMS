@@ -88,6 +88,39 @@ describe("auth.store signIn", () => {
     expect(mocks.routerPush).toHaveBeenCalledWith("/dashboard");
   });
 
+  it("student login สำเร็จ → redirect ไป /my-loans (ฝั่งผู้ยืม)", async () => {
+    const student = makeUser({
+      id: "user-3",
+      email: "student@library.ac.th",
+      fullName: "นักศึกษา",
+      role: "student",
+    });
+    mockSignInSuccess(student);
+    const router = { push: mocks.routerPush };
+
+    const ok = await useAuthStore.getState().signIn(CREDENTIALS, router);
+
+    expect(ok).toBe(true);
+    expect(useAuthStore.getState().session?.role).toBe("student");
+    expect(mocks.routerPush).toHaveBeenCalledWith("/my-loans");
+  });
+
+  it("faculty login สำเร็จ → redirect ไป /my-loans เช่นกัน", async () => {
+    const faculty = makeUser({
+      id: "user-4",
+      email: "faculty@library.ac.th",
+      fullName: "อาจารย์",
+      role: "faculty",
+    });
+    mockSignInSuccess(faculty);
+    const router = { push: mocks.routerPush };
+
+    await useAuthStore.getState().signIn(CREDENTIALS, router);
+
+    expect(useAuthStore.getState().session?.role).toBe("faculty");
+    expect(mocks.routerPush).toHaveBeenCalledWith("/my-loans");
+  });
+
   it("signIn ผิด → เก็บข้อความไทย 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' ใต้ช่อง และไม่ redirect", async () => {
     mocks.nextAuthSignIn.mockResolvedValue({
       ok: false,
