@@ -9,8 +9,8 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const STATUS_LABELS: Record<UserStatus, string> = {
-  active: "ใช้งานอยู่",
-  suspended: "ถูกระงับ",
-  graduated: "จบการศึกษา",
+  active: "ใช้งาน",
+  suspended: "ระงับ",
+  graduated: "สำเร็จการศึกษา",
   inactive: "ไม่ใช้งาน",
 };
