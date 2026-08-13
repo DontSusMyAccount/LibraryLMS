@@ -39,3 +39,7 @@ desktop.ini
 
 # --- Reference (template ที่คัดลอกมาอ้างอิง) ---
 _tailadmin_ref/
+
+# --- Cloudflare Workers (wrangler build output / state) ---
+.wrangler/
+.open-next/

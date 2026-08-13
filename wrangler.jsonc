@@ -1,12 +1,17 @@
 {
-  "name": "librarylms-api",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "librarylms",
   "account_id": "1a6842f72b4ab835020f66f7121cea16",
-  "main": "server/src/worker.cloudflare.ts",
+  "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-13",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "keep_vars": true,
   "observability": {
     "enabled": true,
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
   },
   "hyperdrive": [
     {
