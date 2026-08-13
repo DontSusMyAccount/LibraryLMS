@@ -9,7 +9,7 @@ import { TOKENS } from "../../../tokens";
 import type {
   IAuditRepository,
   IWriteAuditLogInput,
-} from "../../applications/ports/audit.repository";
+} from "../../../shared/applications/ports/audit.repository";
 
 type AuditLogRow = typeof auditLogs.$inferSelect;
 

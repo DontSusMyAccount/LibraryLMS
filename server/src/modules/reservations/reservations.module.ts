@@ -4,8 +4,6 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { container } from "tsyringe";
 
 import { TOKENS } from "../tokens";
-import { DrizzleAuditRepository } from "../catalog/adapters/repository/audit.drizzle.repository";
-import { auditRepositoryToken } from "../catalog/applications/ports/audit.repository";
 import { DrizzleReservationRepository } from "./adapters/repository/reservation.drizzle.repository";
 import { ReservationController } from "./adapters/controllers/reservation.controller";
 import { reservationRepositoryToken } from "./applications/ports/reservation.repository";
@@ -27,7 +25,6 @@ export function registerReservationsModule(deps: ReservationsModuleDeps): void {
   container.register(TOKENS.InternalSecret, { useValue: deps.internalSecret });
 
   container.register(reservationRepositoryToken, { useClass: DrizzleReservationRepository });
-  container.register(auditRepositoryToken, { useClass: DrizzleAuditRepository });
 
   container.register(CreateReservationUsecase, { useClass: CreateReservationUsecase });
   container.register(ListReservationsUsecase, { useClass: ListReservationsUsecase });

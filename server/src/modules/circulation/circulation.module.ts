@@ -4,8 +4,6 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { container } from "tsyringe";
 
 import { TOKENS } from "../tokens";
-import { DrizzleAuditRepository } from "../catalog/adapters/repository/audit.drizzle.repository";
-import { auditRepositoryToken } from "../catalog/applications/ports/audit.repository";
 import { LoanController } from "./adapters/controllers/loan.controller";
 import { DrizzleLoanRepository } from "./adapters/repository/loan.drizzle.repository";
 import { loanRepositoryToken } from "./applications/ports/loan.repository";
@@ -27,7 +25,6 @@ export function registerCirculationModule(deps: CirculationModuleDeps): void {
   container.register(TOKENS.InternalSecret, { useValue: deps.internalSecret });
 
   container.register(loanRepositoryToken, { useClass: DrizzleLoanRepository });
-  container.register(auditRepositoryToken, { useClass: DrizzleAuditRepository });
 
   container.register(CheckoutUsecase, { useClass: CheckoutUsecase });
   container.register(CheckinUsecase, { useClass: CheckinUsecase });

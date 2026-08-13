@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DomainConflictError, DomainNotFoundError } from "../../../../domains/errors";
 import type { AuditLog, LoanRecord, ReservationRecord } from "../../../../shared";
-import type { IAuditRepository } from "../../../catalog/applications/ports/audit.repository";
+import type { IAuditRepository } from "../../../shared/applications/ports/audit.repository";
 import type { IReservationRepository } from "../ports/reservation.repository";
 import { FulfillUsecase } from "./fulfill.usecase";
 

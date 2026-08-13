@@ -4,7 +4,10 @@ import { inject, injectable } from "tsyringe";
 
 import { DomainConflictError, DomainError } from "../../../../domains/errors";
 import { isValidIsbn, normalizeIsbn } from "../lib/isbn";
-import { auditRepositoryToken, type IAuditRepository } from "../ports/audit.repository";
+import {
+  auditRepositoryToken,
+  type IAuditRepository,
+} from "../../../shared/applications/ports/audit.repository";
 import { bookRepositoryToken, type IBookRepository } from "../ports/book.repository";
 import type { ICreateBookCommand, ICreateBookReturnType } from "../schemas/catalog-schemas";
 

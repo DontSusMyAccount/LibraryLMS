@@ -12,7 +12,7 @@ import type {
   ReservationRecord,
   UserStatus,
 } from "../../../../shared";
-import type { IAuditRepository } from "../../../catalog/applications/ports/audit.repository";
+import type { IAuditRepository } from "../../../shared/applications/ports/audit.repository";
 import type {
   ICreateReservationInput,
   IReservationListQuery,

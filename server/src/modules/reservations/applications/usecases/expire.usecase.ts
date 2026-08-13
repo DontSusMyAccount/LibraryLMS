@@ -6,7 +6,7 @@ import { advanceQueue, resolvePickupDays } from "../../../../domains/reservation
 import {
   auditRepositoryToken,
   type IAuditRepository,
-} from "../../../catalog/applications/ports/audit.repository";
+} from "../../../shared/applications/ports/audit.repository";
 import {
   reservationRepositoryToken,
   type IReservationRepository,

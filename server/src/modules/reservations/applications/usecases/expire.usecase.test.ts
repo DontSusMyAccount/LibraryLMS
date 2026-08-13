@@ -2,7 +2,7 @@ import { addDays } from "date-fns";
 import { describe, expect, it } from "vitest";
 
 import type { AuditLog, ReservationRecord } from "../../../../shared";
-import type { IAuditRepository } from "../../../catalog/applications/ports/audit.repository";
+import type { IAuditRepository } from "../../../shared/applications/ports/audit.repository";
 import type { IReservationRepository } from "../ports/reservation.repository";
 import { ExpireOverdueUsecase } from "./expire.usecase";
 

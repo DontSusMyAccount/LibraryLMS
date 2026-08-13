@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DomainNotFoundError } from "../../../../domains/errors";
 import type { AuditLog, BookCopy, FineRecord, LoanRecord } from "../../../../shared";
-import type { IAuditRepository } from "../../../catalog/applications/ports/audit.repository";
+import type { IAuditRepository } from "../../../shared/applications/ports/audit.repository";
 import type {
   ICreateFineInput,
   ICreateLoanInput,

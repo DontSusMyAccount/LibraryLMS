@@ -10,7 +10,7 @@ import {
 import {
   auditRepositoryToken,
   type IAuditRepository,
-} from "../../../catalog/applications/ports/audit.repository";
+} from "../../../shared/applications/ports/audit.repository";
 import {
   reservationRepositoryToken,
   type IReservationRepository,

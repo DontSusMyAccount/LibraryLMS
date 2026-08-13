@@ -8,7 +8,7 @@ import { DomainForbiddenError, DomainNotFoundError } from "../../../../domains/e
 import {
   auditRepositoryToken,
   type IAuditRepository,
-} from "../../../catalog/applications/ports/audit.repository";
+} from "../../../shared/applications/ports/audit.repository";
 import { loanRepositoryToken, type ILoanRepository } from "../ports/loan.repository";
 import type { IRenewCommand, IRenewResult } from "../schemas/loan-schemas";
 

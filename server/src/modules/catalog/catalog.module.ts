@@ -4,6 +4,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { container } from "tsyringe";
 
 import { TOKENS } from "../tokens";
+import { auditRepositoryToken } from "../shared/applications/ports/audit.repository";
 import { BookController } from "./adapters/controllers/book.controller";
 import { CategoryController } from "./adapters/controllers/category.controller";
 import { CopyController } from "./adapters/controllers/copy.controller";
@@ -11,7 +12,6 @@ import { DrizzleAuditRepository } from "./adapters/repository/audit.drizzle.repo
 import { DrizzleBookRepository } from "./adapters/repository/book.drizzle.repository";
 import { DrizzleCategoryRepository } from "./adapters/repository/category.drizzle.repository";
 import { DrizzleCopyRepository } from "./adapters/repository/copy.drizzle.repository";
-import { auditRepositoryToken } from "./applications/ports/audit.repository";
 import { bookRepositoryToken } from "./applications/ports/book.repository";
 import { categoryRepositoryToken } from "./applications/ports/category.repository";
 import { copyRepositoryToken } from "./applications/ports/copy.repository";

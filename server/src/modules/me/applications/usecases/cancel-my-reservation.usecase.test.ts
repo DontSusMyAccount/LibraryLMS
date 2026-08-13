@@ -6,7 +6,7 @@ import {
   DomainNotFoundError,
 } from "../../../../domains/errors";
 import type { ReservationRecord, ReservationStatus } from "../../../../shared";
-import type { IAuditRepository } from "../../../catalog/applications/ports/audit.repository";
+import type { IAuditRepository } from "../../../shared/applications/ports/audit.repository";
 import type { IReservationRepository } from "../../../reservations/applications/ports/reservation.repository";
 import { CancelMyReservationUsecase } from "./cancel-my-reservation.usecase";
 

@@ -8,7 +8,7 @@ import { DomainConflictError, DomainNotFoundError } from "../../../../domains/er
 import {
   auditRepositoryToken,
   type IAuditRepository,
-} from "../../../catalog/applications/ports/audit.repository";
+} from "../../../shared/applications/ports/audit.repository";
 import { loanRepositoryToken, type ILoanRepository } from "../ports/loan.repository";
 import type { ICheckinCommand, ICheckinResult } from "../schemas/loan-schemas";
 
