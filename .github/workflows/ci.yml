@@ -47,6 +47,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/library_lms
       AUTH_SECRET: ci-only-auth-secret-0123456789abcdef
       INTERNAL_SECRET: ci-internal-secret-0123456789
+      NEXT_PUBLIC_API_URL: http://localhost:3001
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
