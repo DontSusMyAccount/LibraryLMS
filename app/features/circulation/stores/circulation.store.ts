@@ -25,7 +25,7 @@ import type {
 const FALLBACK_ERROR_MESSAGE = "เกิดข้อผิดพลาด กรุณาลองใหม่";
 const SUSPENDED_BLOCK_MESSAGE = "สมาชิกถูกระงับสิทธิ์ ไม่สามารถยืมได้";
 const MIXED_RESULT_MESSAGE = "บางรายการยืมสำเร็จ บางรายการไม่สำเร็จ โปรดตรวจสอบ";
-const CHECKOUT_SUCCESS_PREFIX = "ยืมสำเร็จ ✓ กำหนดคืน";
+const CHECKOUT_SUCCESS_PREFIX = "ยืมสำเร็จ กำหนดคืน";
 
 const COPY_ALREADY_LOANED_ERROR = "สำเนานี้ถูกยืมอยู่";
 const MEMBER_SUSPENDED_ERROR = "สมาชิกถูกระงับสิทธิ์การใช้งาน";
@@ -218,7 +218,7 @@ export const useCirculationStore = create<CirculationStoreState>((set, get) => (
       const result = await checkinAction(copyCode);
       const fineMessage =
         result.fine != null ? ` ค่าปรับ ${result.fine.amount.toLocaleString("th-TH")} บาท` : "";
-      set({ isBusy: false, toastMessage: `คืนสำเร็จ ✓ สำเนา ${copyCode}${fineMessage}` });
+      set({ isBusy: false, toastMessage: `คืนสำเร็จ สำเนา ${copyCode}${fineMessage}` });
       return true;
     } catch (error) {
       set({ isBusy: false, checkoutError: mapCirculationError(error) });
@@ -232,7 +232,7 @@ export const useCirculationStore = create<CirculationStoreState>((set, get) => (
       const result = await renewAction(loanId);
       set({
         isBusy: false,
-        toastMessage: `ต่ออายุสำเร็จ ✓ กำหนดคืนใหม่ ${formatThaiDate(result.dueDate)}`,
+        toastMessage: `ต่ออายุสำเร็จ กำหนดคืนใหม่ ${formatThaiDate(result.dueDate)}`,
       });
       await get().refreshActiveLoans();
       return true;
@@ -248,7 +248,7 @@ export const useCirculationStore = create<CirculationStoreState>((set, get) => (
       const result = await recallAction(loanId);
       set({
         isBusy: false,
-        toastMessage: `เรียกคืนสำเร็จ ✓ กำหนดคืนใหม่ ${formatThaiDate(result.dueDate)}`,
+        toastMessage: `เรียกคืนสำเร็จ กำหนดคืนใหม่ ${formatThaiDate(result.dueDate)}`,
       });
       await get().refreshActiveLoans();
       return true;

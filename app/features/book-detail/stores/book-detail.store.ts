@@ -70,7 +70,7 @@ export const useBookDetailStore = create<BookDetailStoreState>((set, get) => ({
       const result = await checkoutBook(copyCode);
       set({
         isSubmitting: false,
-        successMessage: `ยืมสำเร็จ ✓ กำหนดคืน ${formatThaiDate(result.dueDate)}`,
+        successMessage: `ยืมสำเร็จ กำหนดคืน ${formatThaiDate(result.dueDate)}`,
       });
       const bookId = get().book?.id;
       if (bookId) {

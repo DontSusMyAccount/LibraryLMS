@@ -163,7 +163,7 @@ describe("circulation.store — ตะกร้ายืม", () => {
 });
 
 describe("circulation.store — ยืมหนังสือ", () => {
-  it("checkout สำเร็จ → ตั้ง due-date stamp + toast 'ยืมสำเร็จ ✓ กำหนดคืน <date>'", async () => {
+  it("checkout สำเร็จ → ตั้ง due-date stamp + toast 'ยืมสำเร็จ กำหนดคืน <date>'", async () => {
     mocks.loadActiveLoans.mockResolvedValue([makeLoanItem()]);
     mocks.fetchMemberFinesTotal.mockResolvedValue(0);
     mocks.fetchMemberMaxRenewals.mockResolvedValue(2);
@@ -185,9 +185,7 @@ describe("circulation.store — ยืมหนังสือ", () => {
       dueDate: "2026-08-25T00:00:00.000Z",
       memberName: "สมชาย ใจดี",
     });
-    expect(useCirculationStore.getState().toastMessage).toBe(
-      "ยืมสำเร็จ ✓ กำหนดคืน 25 สิงหาคม 2569",
-    );
+    expect(useCirculationStore.getState().toastMessage).toBe("ยืมสำเร็จ กำหนดคืน 25 สิงหาคม 2569");
   });
 
   it("checkout สำเนาที่ถูกยืมอยู่ → แสดงข้อความ 'สำเนานี้ถูกยืมอยู่' ในตะกร้า", async () => {
@@ -223,14 +221,14 @@ describe("circulation.store — ยืมหนังสือ", () => {
 });
 
 describe("circulation.store — คืนหนังสือ", () => {
-  it("checkin สำเร็จ → คืน true + toast 'คืนสำเร็จ ✓'", async () => {
+  it("checkin สำเร็จ → คืน true + toast 'คืนสำเร็จ'", async () => {
     mocks.checkin.mockResolvedValue({ loan: makeLoan({ status: "returned" }) });
 
     const ok = await useCirculationStore.getState().checkin("C-001");
 
     expect(ok).toBe(true);
     expect(mocks.checkin).toHaveBeenCalledWith("C-001");
-    expect(useCirculationStore.getState().toastMessage).toContain("คืนสำเร็จ ✓");
+    expect(useCirculationStore.getState().toastMessage).toContain("คืนสำเร็จ");
   });
 
   it("checkin มีค่าปรับ → toast แสดงยอดค่าปรับ", async () => {

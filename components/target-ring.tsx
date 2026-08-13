@@ -2,14 +2,14 @@ import { TargetIcon } from "lucide-react";
 
 import type { MonthlyTarget } from "@/app/features/dashboard/dashboard.types";
 
-const RADIUS = 52;
-const STROKE = 10;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
 interface TargetRingProps {
   target: MonthlyTarget;
   className?: string;
 }
+
+/** ขนาด ring (พอร์ตจาก SVG เดิม: เส้นหนา 10px บนวงกลม 132px) */
+const RING_SIZE = 132;
+const RING_GAP = 10;
 
 function clampPercent(achieved: number, target: number): number {
   if (target <= 0) {
@@ -20,7 +20,7 @@ function clampPercent(achieved: number, target: number): number {
 
 export function TargetRing({ target, className }: TargetRingProps) {
   const percent = clampPercent(target.achieved, target.target);
-  const dashOffset = CIRCUMFERENCE * (1 - percent / 100);
+  const filledDegrees = percent * 3.6;
 
   return (
     <section
@@ -32,32 +32,18 @@ export function TargetRing({ target, className }: TargetRingProps) {
         <p className="mt-0.5 text-sm text-muted-foreground">รายการยืมที่ครบเป้าหมาย</p>
       </header>
 
-      <div className="relative mx-auto size-[132px]">
-        <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true">
-          <circle
-            cx="66"
-            cy="66"
-            r={RADIUS}
-            fill="none"
-            stroke="var(--color-muted)"
-            strokeWidth={STROKE}
-            strokeLinecap="round"
-          />
-          <circle
-            cx="66"
-            cy="66"
-            r={RADIUS}
-            fill="none"
-            stroke="var(--color-brand-500)"
-            strokeWidth={STROKE}
-            strokeLinecap="round"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={dashOffset}
-            transform="rotate(-90 66 66)"
-            style={{ transition: "stroke-dashoffset 600ms ease" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+      {/* วงแหวนความคืบหน้า — conic-gradient ล้วน (ไม่มี svg มือ) */}
+      <div
+        className="relative mx-auto rounded-full"
+        role="img"
+        aria-label={`ความคืบหน้าเป้าหมาย ${percent}%`}
+        style={{
+          width: RING_SIZE,
+          height: RING_SIZE,
+          background: `conic-gradient(var(--color-brand-500) ${filledDegrees}deg, var(--color-muted) ${filledDegrees}deg)`,
+        }}
+      >
+        <div className="absolute inset-[10px] flex flex-col items-center justify-center gap-0.5 rounded-full bg-card">
           <span className="text-display font-bold tabular-nums text-foreground">{percent}%</span>
           <span className="text-caption tabular-nums text-muted-foreground">
             {target.achieved.toLocaleString("th-TH")}/{target.target.toLocaleString("th-TH")}

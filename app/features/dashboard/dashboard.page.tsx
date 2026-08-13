@@ -9,6 +9,7 @@ import {
   RefreshCcwIcon,
   ReceiptTextIcon,
   TriangleAlertIcon,
+  HandIcon,
 } from "lucide-react";
 
 import type { DashboardIdentity } from "./dashboard.types";
@@ -118,8 +119,9 @@ export function DashboardPage({ identity }: DashboardPageProps) {
         className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h1 className="text-title font-semibold text-foreground">
-            {getGreeting(new Date())}, {userName} 👋
+          <h1 className="flex items-center gap-2 text-title font-semibold text-foreground">
+            {getGreeting(new Date())}, {userName}
+            <HandIcon className="size-5 text-brand-500" aria-hidden />
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">ภาพรวมการใช้งานห้องสมุดวันนี้</p>
         </div>
