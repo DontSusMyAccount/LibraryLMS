@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "library-lms",
+      "name": "librarylms",
       "dependencies": {
         "@auth/core": "*",
         "@aws-sdk/client-s3": "*",
