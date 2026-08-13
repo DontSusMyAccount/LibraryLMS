@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { BookOpenTextIcon, CalendarClockIcon, RefreshCcwIcon } from "lucide-react";
@@ -6,7 +6,7 @@ import { BookOpenTextIcon, CalendarClockIcon, RefreshCcwIcon } from "lucide-reac
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatThaiDate } from "@/app/features/circulation/circulation.format";
+import { formatThaiDate } from "@/app/_shared/lib/format-thai";
 
 import type { MyLoanItem } from "../my-loans.types";
 
@@ -17,10 +17,10 @@ interface LoanItemProps {
 }
 
 const STATUS_LABELS = {
-  active: "ยืมอยู่",
-  overdue: "เลยกำหนด",
-  returned: "คืนแล้ว",
-  lost: "สูญหาย",
+  active: "à¸¢à¸·à¸¡à¸­à¸¢à¸¹à¹ˆ",
+  overdue: "à¹€à¸¥à¸¢à¸à¸³à¸«à¸™à¸”",
+  returned: "à¸„à¸·à¸™à¹à¸¥à¹‰à¸§",
+  lost: "à¸ªà¸¹à¸à¸«à¸²à¸¢",
 } as const;
 
 export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItemProps) {
@@ -33,7 +33,7 @@ export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItem
       <CardContent className="flex items-start gap-3">
         <Link
           href={`/books/${item.bookId}`}
-          aria-label={`ดูรายละเอียด ${bookTitle}`}
+          aria-label={`à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸” ${bookTitle}`}
           className="shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-ring/25 focus-visible:outline-none"
         >
           <div className="flex size-14 items-center justify-center overflow-hidden rounded-md bg-muted">
@@ -41,7 +41,7 @@ export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItem
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={item.bookCoverUrl}
-                alt={`ปกหนังสือ ${bookTitle}`}
+                alt={`à¸›à¸à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­ ${bookTitle}`}
                 className="size-full object-cover"
               />
             ) : (
@@ -68,8 +68,9 @@ export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItem
           </div>
 
           <p className="mt-1 text-xs text-muted-foreground">
-            สำเนา <span className="font-medium tabular-nums text-foreground">{copyCode}</span> ·
-            ยืมเมื่อ {formatThaiDate(loan.borrowedAt)}
+            à¸ªà¸³à¹€à¸™à¸²{" "}
+            <span className="font-medium tabular-nums text-foreground">{copyCode}</span> Â·
+            à¸¢à¸·à¸¡à¹€à¸¡à¸·à¹ˆà¸­ {formatThaiDate(loan.borrowedAt)}
           </p>
           <p
             className={
@@ -80,8 +81,8 @@ export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItem
           >
             <CalendarClockIcon className="mr-1 inline size-3.5" aria-hidden="true" />
             {isOverdue
-              ? `เลยกำหนด ${item.daysOverdue} วัน — ต้องคืน`
-              : `กำหนดคืน ${formatThaiDate(loan.dueAt)}`}
+              ? `à¹€à¸¥à¸¢à¸à¸³à¸«à¸™à¸” ${item.daysOverdue} à¸§à¸±à¸™ â€” à¸•à¹‰à¸­à¸‡à¸„à¸·à¸™`
+              : `à¸à¸³à¸«à¸™à¸”à¸„à¸·à¸™ ${formatThaiDate(loan.dueAt)}`}
           </p>
 
           {loan.status === "active" && !isOverdue && (
@@ -94,7 +95,11 @@ export function LoanItem({ item, renewing, onRenew = () => undefined }: LoanItem
               onClick={() => onRenew(loan.id)}
             >
               <RefreshCcwIcon />
-              {renewing ? "กำลังต่ออายุ..." : item.canRenew ? "ต่ออายุ" : "ต่ออายุไม่ได้"}
+              {renewing
+                ? "à¸à¸³à¸¥à¸±à¸‡à¸•à¹ˆà¸­à¸­à¸²à¸¢à¸¸..."
+                : item.canRenew
+                  ? "à¸•à¹ˆà¸­à¸­à¸²à¸¢à¸¸"
+                  : "à¸•à¹ˆà¸­à¸­à¸²à¸¢à¸¸à¹„à¸¡à¹ˆà¹„à¸”à¹‰"}
             </Button>
           )}
         </div>

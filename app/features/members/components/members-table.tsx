@@ -1,7 +1,5 @@
 "use client";
 
-import type { UserRole } from "@libsys/shared";
-
 import {
   Table,
   TableBody,
@@ -14,13 +12,9 @@ import {
 import type { MemberListItem } from "../members.types";
 import { MemberStatusBadge } from "./member-status-badge";
 
-export const ROLE_LABELS: Record<UserRole, string> = {
-  admin: "แอดมิน",
-  librarian: "บรรณารักษ์",
-  faculty: "อาจารย์",
-  staff: "เจ้าหน้าที่",
-  student: "นักศึกษา",
-};
+import { ROLE_LABELS } from "@/app/_shared/constants/member.labels";
+
+export { ROLE_LABELS };
 
 interface MembersTableProps {
   members: MemberListItem[];

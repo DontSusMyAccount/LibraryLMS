@@ -3,8 +3,8 @@
 import { create } from "zustand";
 
 import type { BookWithCopies } from "@libsys/shared";
-import type { MyReservationItem } from "@/app/features/my-reservations/my-reservations.types";
-import { formatThaiDate } from "@/app/features/circulation/circulation.format";
+import type { MyReservationItem } from "@/app/_shared/types/reservation-item";
+import { formatThaiDate } from "@/app/_shared/lib/format-thai";
 
 import {
   checkoutBook,

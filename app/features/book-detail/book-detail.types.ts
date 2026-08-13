@@ -9,4 +9,4 @@ export interface ReserveResult {
   reservation: ReservationRecord;
 }
 
-export type { MyReservationItem } from "@/app/features/my-reservations/my-reservations.types";
+export type { MyReservationItem } from "@/app/_shared/types/reservation-item";

@@ -2,7 +2,7 @@ import type { BookWithCopies, ReservationRecord } from "@libsys/shared";
 
 import { eden } from "@/app/_shared/lib/eden-client";
 import { edenRequest } from "@/app/_shared/lib/eden-helpers";
-import type { MyReservationItem } from "@/app/features/my-reservations/my-reservations.types";
+import type { MyReservationItem } from "@/app/_shared/types/reservation-item";
 
 import type { CheckoutResult } from "../book-detail.types";
 

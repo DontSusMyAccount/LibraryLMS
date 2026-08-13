@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import {
@@ -13,23 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatBath, formatThaiDate } from "@/app/features/circulation/circulation.format";
+import { formatBath, formatThaiDate } from "@/app/_shared/lib/format-thai";
 import { cn } from "@/lib/utils";
 
 import { useMyFines } from "./hooks/use-my-fines";
 import type { FineReason } from "@libsys/shared";
 
-const PAGE_TITLE = "ค่าปรับของฉัน";
-const PAGE_SUBTITLE = "ยอดค้างชำระและรายการค่าปรับทั้งหมดของคุณ";
+const PAGE_TITLE = "à¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¸‚à¸­à¸‡à¸‰à¸±à¸™";
+const PAGE_SUBTITLE =
+  "à¸¢à¸­à¸”à¸„à¹‰à¸²à¸‡à¸Šà¸³à¸£à¸°à¹à¸¥à¸°à¸£à¸²à¸¢à¸à¸²à¸£à¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”à¸‚à¸­à¸‡à¸„à¸¸à¸“";
 const PAY_NOTE =
-  "ชำระค่าปรับได้ที่เคาน์เตอร์ห้องสมุด (ยังไม่มีชำระออนไลน์) — ค้างชำระเกินเพดานจะไม่สามารถยืมหนังสือได้";
-const EMPTY_TITLE = "ไม่มีค่าปรับค้างชำระ";
-const EMPTY_HINT = "ยอดนี้รวมค่าปรับที่จ่ายแล้วและถูกยกเว้นแล้ว";
+  "à¸Šà¸³à¸£à¸°à¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¹„à¸”à¹‰à¸—à¸µà¹ˆà¹€à¸„à¸²à¸™à¹Œà¹€à¸•à¸­à¸£à¹Œà¸«à¹‰à¸­à¸‡à¸ªà¸¡à¸¸à¸” (à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸Šà¸³à¸£à¸°à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ) â€” à¸„à¹‰à¸²à¸‡à¸Šà¸³à¸£à¸°à¹€à¸à¸´à¸™à¹€à¸žà¸”à¸²à¸™à¸ˆà¸°à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸¢à¸·à¸¡à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¹„à¸”à¹‰";
+const EMPTY_TITLE = "à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¸„à¹‰à¸²à¸‡à¸Šà¸³à¸£à¸°";
+const EMPTY_HINT =
+  "à¸¢à¸­à¸”à¸™à¸µà¹‰à¸£à¸§à¸¡à¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¸—à¸µà¹ˆà¸ˆà¹ˆà¸²à¸¢à¹à¸¥à¹‰à¸§à¹à¸¥à¸°à¸–à¸¹à¸à¸¢à¸à¹€à¸§à¹‰à¸™à¹à¸¥à¹‰à¸§";
 
 const REASON_LABELS: Record<FineReason, string> = {
-  overdue: "ส่งคืนล่าช้า",
-  lost: "หนังสือสูญหาย",
-  damaged: "หนังสือชำรุด",
+  overdue: "à¸ªà¹ˆà¸‡à¸„à¸·à¸™à¸¥à¹ˆà¸²à¸Šà¹‰à¸²",
+  lost: "à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¸ªà¸¹à¸à¸«à¸²à¸¢",
+  damaged: "à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¸Šà¸³à¸£à¸¸à¸”",
 };
 
 export function MyFinesPage() {
@@ -54,13 +56,16 @@ export function MyFinesPage() {
           <div className="flex size-14 items-center justify-center rounded-full bg-accent-coral/10 text-accent-coral">
             <TriangleAlertIcon className="size-7" />
           </div>
-          <h2 className="text-title font-semibold text-foreground">โหลดค่าปรับไม่สำเร็จ</h2>
+          <h2 className="text-title font-semibold text-foreground">
+            à¹‚à¸«à¸¥à¸”à¸„à¹ˆà¸²à¸›à¸£à¸±à¸šà¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ
+          </h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            {errorMessage ?? "ไม่สามารถเชื่อมต่อกับระบบได้ กรุณาลองใหม่"}
+            {errorMessage ??
+              "à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¸à¸±à¸šà¸£à¸°à¸šà¸šà¹„à¸”à¹‰ à¸à¸£à¸¸à¸“à¸²à¸¥à¸­à¸‡à¹ƒà¸«à¸¡à¹ˆ"}
           </p>
           <Button type="button" variant="outline" onClick={() => void load()}>
             <RefreshCcwIcon />
-            ลองใหม่อีกครั้ง
+            à¸¥à¸­à¸‡à¹ƒà¸«à¸¡à¹ˆà¸­à¸µà¸à¸„à¸£à¸±à¹‰à¸‡
           </Button>
         </section>
       ) : isLoading ? (
@@ -83,7 +88,7 @@ export function MyFinesPage() {
                 aria-hidden="true"
               />
               <p className="text-caption font-medium tracking-wide text-muted-foreground">
-                ยอดค้างชำระรวม
+                à¸¢à¸­à¸”à¸„à¹‰à¸²à¸‡à¸Šà¸³à¸£à¸°à¸£à¸§à¸¡
               </p>
               <p
                 className={cn(
@@ -91,7 +96,7 @@ export function MyFinesPage() {
                   unpaidTotal > 0 ? "text-accent-coral" : "text-foreground",
                 )}
               >
-                {formatBath(unpaidTotal)} บาท
+                {formatBath(unpaidTotal)} à¸šà¸²à¸—
               </p>
               {unpaidTotal > 0 && (
                 <p className="mt-2 flex items-start gap-1.5 rounded-md bg-background/70 px-3 py-2 text-xs text-muted-foreground">
@@ -115,7 +120,9 @@ export function MyFinesPage() {
             </section>
           ) : (
             <section data-slot="fines-list" className="flex flex-col gap-3">
-              <h2 className="text-title font-semibold text-foreground">รายการค่าปรับ</h2>
+              <h2 className="text-title font-semibold text-foreground">
+                à¸£à¸²à¸¢à¸à¸²à¸£à¸„à¹ˆà¸²à¸›à¸£à¸±à¸š
+              </h2>
               {fines.map((fine) => (
                 <Card key={fine.id} data-slot="fine-item" size="sm" className="gap-3">
                   <CardContent className="flex items-center justify-between gap-3">
@@ -124,17 +131,21 @@ export function MyFinesPage() {
                         {REASON_LABELS[fine.reason] ?? fine.reason}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        วันที่บันทึก {formatThaiDate(fine.createdAt)}
+                        à¸§à¸±à¸™à¸—à¸µà¹ˆà¸šà¸±à¸™à¸—à¸¶à¸ {formatThaiDate(fine.createdAt)}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span className="text-sm font-semibold tabular-nums text-foreground">
-                        {formatBath(fine.amount)} บาท
+                        {formatBath(fine.amount)} à¸šà¸²à¸—
                       </span>
                       <Badge
                         variant={fine.waived ? "secondary" : fine.paid ? "outline" : "destructive"}
                       >
-                        {fine.waived ? "ยกเว้นแล้ว" : fine.paid ? "จ่ายแล้ว" : "ค้างชำระ"}
+                        {fine.waived
+                          ? "à¸¢à¸à¹€à¸§à¹‰à¸™à¹à¸¥à¹‰à¸§"
+                          : fine.paid
+                            ? "à¸ˆà¹ˆà¸²à¸¢à¹à¸¥à¹‰à¸§"
+                            : "à¸„à¹‰à¸²à¸‡à¸Šà¸³à¸£à¸°"}
                       </Badge>
                     </div>
                   </CardContent>

@@ -22,6 +22,7 @@ jobs:
           cache: true
       - run: bun install
       - run: bunx oxlint .
+      - run: bunx depcruise app server/src --config .dependency-cruiser.js
       - run: bunx prettier --check .
       - run: bunx tsc --noEmit
       - run: bun run test:unit

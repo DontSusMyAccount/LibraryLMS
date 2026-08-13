@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -14,21 +14,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatThaiDate } from "@/app/features/circulation/circulation.format";
+import { formatThaiDate } from "@/app/_shared/lib/format-thai";
 
 import { useMyReservations } from "./hooks/use-my-reservations";
 import type { ReservationStatus } from "@libsys/shared";
 
-const PAGE_TITLE = "การจองของฉัน";
-const PAGE_SUBTITLE = "ติดตามคิวรอหนังสือที่คุณจองไว้";
+const PAGE_TITLE = "à¸à¸²à¸£à¸ˆà¸­à¸‡à¸‚à¸­à¸‡à¸‰à¸±à¸™";
+const PAGE_SUBTITLE =
+  "à¸•à¸´à¸”à¸•à¸²à¸¡à¸„à¸´à¸§à¸£à¸­à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¸—à¸µà¹ˆà¸„à¸¸à¸“à¸ˆà¸­à¸‡à¹„à¸§à¹‰";
 
 const STATUS_LABELS: Record<ReservationStatus, string> = {
-  waiting: "รอคิว",
-  ready: "พร้อมรับ",
-  fulfilled: "สำเร็จแล้ว",
-  expired: "หมดอายุ",
-  cancelled: "ยกเลิก",
-  suspended: "ระงับ",
+  waiting: "à¸£à¸­à¸„à¸´à¸§",
+  ready: "à¸žà¸£à¹‰à¸­à¸¡à¸£à¸±à¸š",
+  fulfilled: "à¸ªà¸³à¹€à¸£à¹‡à¸ˆà¹à¸¥à¹‰à¸§",
+  expired: "à¸«à¸¡à¸”à¸­à¸²à¸¢à¸¸",
+  cancelled: "à¸¢à¸à¹€à¸¥à¸´à¸",
+  suspended: "à¸£à¸°à¸‡à¸±à¸š",
 };
 
 const STATUS_VARIANTS: Record<
@@ -43,10 +44,11 @@ const STATUS_VARIANTS: Record<
   suspended: "destructive",
 };
 
-const EMPTY_TITLE = "ยังไม่มีคิวจอง";
-const EMPTY_HINT = "เมื่อหนังสือที่ต้องการถูกยืมหมด ลองกดจองจากหน้ารายละเอียดหนังสือ";
-const BROWSE_LABEL = "ไปค้นหาหนังสือ";
-const LOAD_ERROR_TITLE = "โหลดคิวจองไม่สำเร็จ";
+const EMPTY_TITLE = "à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸„à¸´à¸§à¸ˆà¸­à¸‡";
+const EMPTY_HINT =
+  "à¹€à¸¡à¸·à¹ˆà¸­à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¸—à¸µà¹ˆà¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸–à¸¹à¸à¸¢à¸·à¸¡à¸«à¸¡à¸” à¸¥à¸­à¸‡à¸à¸”à¸ˆà¸­à¸‡à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­";
+const BROWSE_LABEL = "à¹„à¸›à¸„à¹‰à¸™à¸«à¸²à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­";
+const LOAD_ERROR_TITLE = "à¹‚à¸«à¸¥à¸”à¸„à¸´à¸§à¸ˆà¸­à¸‡à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ";
 
 export function MyReservationsPage() {
   const {
@@ -81,10 +83,11 @@ export function MyReservationsPage() {
           </div>
           <h2 className="text-title font-semibold text-foreground">{LOAD_ERROR_TITLE}</h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            {errorMessage ?? "ไม่สามารถเชื่อมต่อกับระบบได้ กรุณาลองใหม่"}
+            {errorMessage ??
+              "à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¸à¸±à¸šà¸£à¸°à¸šà¸šà¹„à¸”à¹‰ à¸à¸£à¸¸à¸“à¸²à¸¥à¸­à¸‡à¹ƒà¸«à¸¡à¹ˆ"}
           </p>
           <Button type="button" variant="outline" onClick={() => void load()}>
-            ลองใหม่อีกครั้ง
+            à¸¥à¸­à¸‡à¹ƒà¸«à¸¡à¹ˆà¸­à¸µà¸à¸„à¸£à¸±à¹‰à¸‡
           </Button>
         </section>
       ) : isLoading ? (
@@ -130,7 +133,7 @@ export function MyReservationsPage() {
                   <CardContent className="flex items-start gap-3">
                     <Link
                       href={`/books/${reservation.bookId}`}
-                      aria-label={`ดูรายละเอียด ${bookTitle}`}
+                      aria-label={`à¸”à¸¹à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸” ${bookTitle}`}
                       className="shrink-0 rounded-md focus-visible:ring-3 focus-visible:ring-ring/25 focus-visible:outline-none"
                     >
                       <div className="flex size-14 items-center justify-center overflow-hidden rounded-md bg-muted">
@@ -138,7 +141,7 @@ export function MyReservationsPage() {
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={bookCoverUrl}
-                            alt={`ปกหนังสือ ${bookTitle}`}
+                            alt={`à¸›à¸à¸«à¸™à¸±à¸‡à¸ªà¸·à¸­ ${bookTitle}`}
                             className="size-full object-cover"
                           />
                         ) : (
@@ -165,12 +168,14 @@ export function MyReservationsPage() {
 
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                         <CalendarClockIcon className="size-3.5" aria-hidden="true" />
-                        จองเมื่อ {formatThaiDate(reservation.reservedAt)}
+                        à¸ˆà¸­à¸‡à¹€à¸¡à¸·à¹ˆà¸­ {formatThaiDate(reservation.reservedAt)}
                       </p>
 
                       {reservation.status === "ready" && reservation.pickupDeadline && (
                         <p className="mt-0.5 text-xs font-medium text-brand-700 dark:text-brand-300">
-                          รับหนังสือภายใน {formatThaiDate(reservation.pickupDeadline)} ที่เคาน์เตอร์
+                          à¸£à¸±à¸šà¸«à¸™à¸±à¸‡à¸ªà¸·à¸­à¸ à¸²à¸¢à¹ƒà¸™{" "}
+                          {formatThaiDate(reservation.pickupDeadline)}{" "}
+                          à¸—à¸µà¹ˆà¹€à¸„à¸²à¸™à¹Œà¹€à¸•à¸­à¸£à¹Œ
                         </p>
                       )}
 
@@ -184,7 +189,9 @@ export function MyReservationsPage() {
                           onClick={() => void cancel(reservation.id)}
                         >
                           <XIcon />
-                          {cancellingId === reservation.id ? "กำลังยกเลิก..." : "ยกเลิกคิวจอง"}
+                          {cancellingId === reservation.id
+                            ? "à¸à¸³à¸¥à¸±à¸‡à¸¢à¸à¹€à¸¥à¸´à¸..."
+                            : "à¸¢à¸à¹€à¸¥à¸´à¸à¸„à¸´à¸§à¸ˆà¸­à¸‡"}
                         </Button>
                       )}
                     </div>

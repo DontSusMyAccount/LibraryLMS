@@ -2,12 +2,9 @@ import type { UserStatus } from "@libsys/shared";
 
 import { cn } from "@/lib/utils";
 
-export const STATUS_LABELS: Record<UserStatus, string> = {
-  active: "ใช้งาน",
-  suspended: "ระงับ",
-  graduated: "สำเร็จการศึกษา",
-  inactive: "ไม่ใช้งาน",
-};
+import { STATUS_LABELS } from "@/app/_shared/constants/member.labels";
+
+export { STATUS_LABELS };
 
 interface MemberStatusConfig {
   badgeClass: string;

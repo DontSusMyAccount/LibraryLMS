@@ -22,11 +22,7 @@ export interface CheckoutCartItem {
   error: string | null;
 }
 
-export interface DueDateStampData {
-  copyCodes: string[];
-  dueDate: string;
-  memberName: string;
-}
+export type { DueDateStampData } from "@/app/_shared/types/due-date-stamp";
 
 export type CirculationTab = "checkout" | "checkin" | "overdue";
 

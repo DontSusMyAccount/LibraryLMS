@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { DueDateStamp } from "@/components/due-date-stamp";
-import type { DueDateStampData } from "@/app/features/circulation/circulation.types";
+import type { DueDateStampData } from "@/app/_shared/types/due-date-stamp";
 
 import type { MeProfile, MyLoanItem } from "../my-loans.types";
 
