@@ -12,6 +12,7 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+.turbo/
 
 # --- Testing ---
 playwright-report/
@@ -28,10 +29,12 @@ uploads/
 # --- OS ---
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # --- IDE ---
 .idea/
 .vscode/
+*.code-workspace
 
 # --- Reference (template ที่คัดลอกมาอ้างอิง) ---
 _tailadmin_ref/
