@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeftRightIcon,
   BookOpenTextIcon,
@@ -17,6 +17,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useSidebar } from "@/app/_shared/hooks/use-sidebar";
+import { ROUTES } from "@/app/_shared/constants/routes";
+import { useAuthStore } from "@/app/features/login/stores/auth.store";
 
 interface NavItemDef {
   label: string;
@@ -54,6 +56,12 @@ interface SidebarContentProps {
 
 function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await useAuthStore.getState().signOut();
+    router.push(ROUTES.AUTH_SIGNIN);
+  };
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -147,6 +155,7 @@ function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="ออกจากระบบ"
+                onClick={handleLogout}
                 className="text-sidebar-foreground/60 hover:bg-white/5 hover:text-sidebar-foreground"
               >
                 <LogOutIcon data-icon="inline-start" />

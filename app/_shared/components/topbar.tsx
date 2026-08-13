@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -23,6 +23,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/app/_shared/components/theme-toggle";
+import { ROUTES } from "@/app/_shared/constants/routes";
+import { useAuthStore } from "@/app/features/login/stores/auth.store";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -43,6 +45,12 @@ function useBreadcrumb() {
 
 export function Topbar({ onMenuClick }: TopbarProps) {
   const { leaf } = useBreadcrumb();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await useAuthStore.getState().signOut();
+    router.push(ROUTES.AUTH_SIGNIN);
+  };
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-0 bg-background/80 px-4 backdrop-blur-md lg:px-6">
@@ -123,7 +131,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               การตั้งค่า
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem variant="destructive" onClick={handleLogout}>
               <LogOutIcon data-icon="inline-start" />
               ออกจากระบบ
             </DropdownMenuItem>
