@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { LogOutIcon } from "lucide-react";
 
@@ -21,8 +22,14 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-2xl items-center gap-3 px-4">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-brand-500 text-white">
-            <span className="text-sm font-semibold">บ</span>
+          <div className="relative size-9 shrink-0">
+            <Image
+              src="/brand/logo.png"
+              alt="Library LMS"
+              fill
+              sizes="36px"
+              className="object-contain"
+            />
           </div>
           <div className="leading-tight">
             <p className="text-title font-semibold text-foreground">Library LMS</p>

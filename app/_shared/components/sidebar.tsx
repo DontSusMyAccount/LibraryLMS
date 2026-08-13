@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeftRightIcon,
@@ -74,8 +75,14 @@ function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
           collapsed && "justify-center px-0",
         )}
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white">
-          <BookOpenTextIcon className="size-5" />
+        <div className="relative size-10 shrink-0">
+          <Image
+            src="/brand/logo.png"
+            alt="Library LMS"
+            fill
+            sizes="40px"
+            className="object-contain"
+          />
         </div>
         {!collapsed && (
           <div className="leading-tight">
