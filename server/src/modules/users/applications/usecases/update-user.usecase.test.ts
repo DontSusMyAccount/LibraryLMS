@@ -41,6 +41,10 @@ function buildUpdatedUser(id: string, input: UpdateUserInput): UserRecord {
   };
 }
 
+type UpdateUserUsecaseGuardHost = Pick<UpdateUserUsecase, "execute"> & {
+  assertStudentOrStaffIdUnique: (studentOrStaffId: string | undefined, id: string) => Promise<void>;
+};
+
 function createRepository(
   options: { existingUser?: UserRecord | null; existingById?: UserRecord | null } = {},
 ) {
@@ -200,6 +204,25 @@ describe("UpdateUserUsecase", () => {
       message: "รหัสนักศึกษา/พนักงานนี้ถูกใช้งานแล้ว",
     });
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it("guard sequence: assertStudentOrStaffIdUnique ถูกเรียกด้วย (studentOrStaffId, id) เมื่อส่ง studentOrStaffId", async () => {
+    const { repository, update } = createRepository({
+      existingUser: buildUser({ id: "u-1", studentOrStaffId: "610012345" }),
+      existingById: buildUser({ id: "u-1", studentOrStaffId: "610012345" }),
+    });
+    const usecase = new UpdateUserUsecase(repository) as unknown as UpdateUserUsecaseGuardHost;
+    const guardSpy = vi.spyOn(usecase, "assertStudentOrStaffIdUnique");
+
+    await usecase.execute({
+      command: { studentOrStaffId: "610012345" },
+      id: "u-1",
+      actorId: "u-admin",
+    });
+
+    expect(guardSpy).toHaveBeenCalledWith("610012345", "u-1");
+    expect(update).toHaveBeenCalledTimes(1);
+    guardSpy.mockRestore();
   });
 
   it("studentOrStaffId เหมือนเดิมของตัวเอง (id เดียวกัน) → ผ่าน ไม่ conflict", async () => {

@@ -8,7 +8,7 @@ import {
   DomainForbiddenError,
   DomainNotFoundError,
 } from "../../../../domains/errors";
-import { toPublic } from "../../../../shared";
+import { toPublic, type UserRecord } from "../../../../shared";
 import {
   userRepositoryToken,
   type IUserRepository,
@@ -43,24 +43,42 @@ export class UpdateUserUsecase {
       throw new DomainNotFoundError(USER_NOT_FOUND_MESSAGE);
     }
 
-    const isSelfChangingOwnRoleOrStatus =
-      actorId === id &&
-      ((command.role !== undefined && command.role !== user.role) ||
-        (command.status !== undefined && command.status !== user.status));
-    if (isSelfChangingOwnRoleOrStatus) {
-      throw new DomainForbiddenError(SELF_CHANGE_MESSAGE);
-    }
+    this.assertNotSelfRoleOrStatusChange(command, id, actorId, user);
 
-    if (command.studentOrStaffId !== undefined) {
-      const existingById = await this.repository.findByStudentOrStaffId(command.studentOrStaffId);
-      if (existingById && existingById.id !== id) {
-        throw new DomainConflictError(DUPLICATE_ID_MESSAGE);
-      }
-    }
+    await this.assertStudentOrStaffIdUnique(command.studentOrStaffId, id);
 
     const updateInput: UpdateUserInput = command;
     const updated = await this.repository.update(id, updateInput);
 
     return { user: toPublic(updated) };
+  }
+
+  private assertNotSelfRoleOrStatusChange(
+    command: IUpdateUserCommand,
+    id: string,
+    actorId: string,
+    user: UserRecord,
+  ): void {
+    const isChangingOwnRoleOrStatus =
+      actorId === id &&
+      ((command.role !== undefined && command.role !== user.role) ||
+        (command.status !== undefined && command.status !== user.status));
+    if (isChangingOwnRoleOrStatus) {
+      throw new DomainForbiddenError(SELF_CHANGE_MESSAGE);
+    }
+  }
+
+  private async assertStudentOrStaffIdUnique(
+    studentOrStaffId: string | undefined,
+    id: string,
+  ): Promise<void> {
+    if (studentOrStaffId === undefined) {
+      return;
+    }
+
+    const existingById = await this.repository.findByStudentOrStaffId(studentOrStaffId);
+    if (existingById && existingById.id !== id) {
+      throw new DomainConflictError(DUPLICATE_ID_MESSAGE);
+    }
   }
 }
