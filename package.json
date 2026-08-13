@@ -12,6 +12,7 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:push": "drizzle-kit push --config drizzle.config.ts",
     "db:seed": "bun run server/src/seed.ts",
+    "db:extensions": "bun run server/src/scripts/enable-extensions.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
