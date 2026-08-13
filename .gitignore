@@ -32,3 +32,6 @@ Thumbs.db
 # --- IDE ---
 .idea/
 .vscode/
+
+# --- Reference (template ที่คัดลอกมาอ้างอิง) ---
+_tailadmin_ref/
