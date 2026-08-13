@@ -1,7 +1,7 @@
 import type { UserRole, UserStatus } from "@libsys/shared";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
-  admin: "ผู้ดูแลระบบ",
+  admin: "แอดมิน",
   librarian: "บรรณารักษ์",
   faculty: "อาจารย์",
   staff: "เจ้าหน้าที่",
