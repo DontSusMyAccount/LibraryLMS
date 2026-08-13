@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  fast-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          cache: true
+      - run: bun install
+      - run: bunx oxlint .
+      - run: bunx depcruise app server/src --config .dependency-cruiser.js
+      - run: bunx prettier --check .
+      - run: bunx tsc --noEmit
+      - run: bun run test:unit
+      - run: bun run test:security
+      - run: bunx vitest run --config vitest.web.config.ts
+
+  db-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: library_lms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/library_lms
+      AUTH_SECRET: ci-only-auth-secret-0123456789abcdef
+      INTERNAL_SECRET: ci-internal-secret-0123456789
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          cache: true
+      - run: bun install
+      - run: bunx playwright install chromium --with-deps
+      - name: Create .env.e2e
+        run: echo "DATABASE_URL=${{ env.DATABASE_URL }}" > .env.e2e
+      - run: bun run db:extensions
+      - run: bun run db:push
+      - run: bun run db:seed
+      - run: bun run test:integration
+      - run: bun run test:e2e
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

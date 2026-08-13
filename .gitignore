@@ -12,10 +12,16 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+.turbo/
 
 # --- Testing ---
 playwright-report/
 test-results/
+e2e/.fixtures.json
+
+# --- Runtime logs ---
+*.log
+!package-lock.json
 
 # --- Uploads (ถ้าใช้ local storage fallback) ---
 uploads/
@@ -23,7 +29,12 @@ uploads/
 # --- OS ---
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # --- IDE ---
 .idea/
 .vscode/
+*.code-workspace
+
+# --- Reference (template ที่คัดลอกมาอ้างอิง) ---
+_tailadmin_ref/

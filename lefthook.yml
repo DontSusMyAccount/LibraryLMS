@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "*.{js,mjs,cjs,ts,tsx,jsx}"
+      run: bunx oxlint {staged_files}
+    format:
+      glob: "*.{js,mjs,cjs,ts,tsx,jsx,json,jsonc,md}"
+      run: bunx prettier --check {staged_files}
+    depcruise:
+      run: bunx depcruise app server/src --config .dependency-cruiser.js
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1}
