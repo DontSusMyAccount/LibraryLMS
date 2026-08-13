@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "librarylms",
+  "account_id": "1a6842f72b4ab835020f66f7121cea16",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-13",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "keep_vars": true,
+  "observability": {
+    "enabled": true,
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "19db769394a6475c9e4891468cfc1669",
+    },
+  ],
+  "vars": {
+    "NODE_ENV": "production",
+    "STORAGE_DRIVER": "r2",
+  },
+}

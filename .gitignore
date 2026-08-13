@@ -41,3 +41,4 @@ _tailadmin_ref/
 
 # --- Cloudflare Workers (wrangler build output / state) ---
 .wrangler/
+.open-next/
