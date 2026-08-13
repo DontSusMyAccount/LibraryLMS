@@ -1,0 +1,20 @@
+{
+  "name": "librarylms-api",
+  "main": "server/src/worker.cloudflare.ts",
+  "compatibility_date": "2026-08-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
+  "observability": {
+    "enabled": true,
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "19db769394a6475c9e4891468cfc1669",
+    },
+  ],
+  "vars": {
+    "NODE_ENV": "production",
+    "STORAGE_DRIVER": "r2",
+  },
+}

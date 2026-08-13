@@ -120,6 +120,7 @@ declare module "@auth/core/types" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   pages: { signIn: ROUTES.AUTH_SIGNIN },
   providers: [
