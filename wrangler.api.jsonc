@@ -1,5 +1,6 @@
 {
   "name": "librarylms-api",
+  "account_id": "1a6842f72b4ab835020f66f7121cea16",
   "main": "server/src/worker.cloudflare.ts",
   "compatibility_date": "2026-08-13",
   "compatibility_flags": ["nodejs_compat"],
