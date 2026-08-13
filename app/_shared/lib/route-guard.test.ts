@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -17,6 +20,16 @@ function matchesGlob(pattern: string, pathname: string): boolean {
   return pathname === pattern;
 }
 
+/** matcher ของ middleware.ts เป็น literal (Turbopack อ่านค่าคงที่ข้ามไฟล์ไม่ได้) — ต้องตรงตาม MATCHER_PATHS */
+function middlewareMatcher(): string[] {
+  const source = readFileSync(path.resolve("middleware.ts"), "utf8");
+  const match = source.match(/matcher:\s*\[([\s\S]*?)\]/);
+  if (!match) {
+    throw new Error("ไม่พบ matcher literal ใน middleware.ts");
+  }
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
+}
+
 describe("isProtectedPath", () => {
   it("คืน true สำหรับ path ที่ต้องการ login (exact match)", () => {
     expect(isProtectedPath("/dashboard")).toBe(true);
@@ -29,6 +42,11 @@ describe("isProtectedPath", () => {
   it("คืน true สำหรับหน้า /my-loans (ฝั่งผู้ยืม)", () => {
     expect(isProtectedPath("/my-loans")).toBe(true);
     expect(isProtectedPath("/my-loans/history")).toBe(true);
+  });
+
+  it("คืน true สำหรับหน้า /profile และ /settings (backoffice ใหม่)", () => {
+    expect(isProtectedPath("/profile")).toBe(true);
+    expect(isProtectedPath("/settings")).toBe(true);
   });
 
   it("คืน false สำหรับ /login", () => {
@@ -83,6 +101,8 @@ describe("resolveRouteGuard", () => {
     expect(resolveRouteGuard("/catalog", false)).toBe("/login");
     expect(resolveRouteGuard("/members", false)).toBe("/login");
     expect(resolveRouteGuard("/my-loans", false)).toBe("/login");
+    expect(resolveRouteGuard("/profile", false)).toBe("/login");
+    expect(resolveRouteGuard("/settings", false)).toBe("/login");
   });
 
   it("login แล้วเข้า /login → redirect ตาม role (admin → /dashboard)", () => {
@@ -103,6 +123,8 @@ describe("resolveRouteGuard", () => {
   it("student เข้าหน้า backoffice → redirect กลับ /my-loans", () => {
     expect(resolveRouteGuard("/catalog", true, "student")).toBe("/my-loans");
     expect(resolveRouteGuard("/members", true, "faculty")).toBe("/my-loans");
+    expect(resolveRouteGuard("/profile", true, "student")).toBe("/my-loans");
+    expect(resolveRouteGuard("/settings", true, "student")).toBe("/my-loans");
   });
 
   it("คืน null เมื่อยังไม่ login เข้า /login", () => {
@@ -122,6 +144,8 @@ describe("MATCHER_PATHS", () => {
       "/circulation/:path*",
       "/reservations/:path*",
       "/members/:path*",
+      "/profile/:path*",
+      "/settings/:path*",
       "/my-loans/:path*",
       "/login",
     ]);
@@ -132,6 +156,10 @@ describe("MATCHER_PATHS", () => {
       expect(matchesGlob(pattern, "/api")).toBe(false);
       expect(matchesGlob(pattern, "/api/auth/nextauth")).toBe(false);
     }
+  });
+
+  it("matcher literal ใน middleware.ts ตรงกับ MATCHER_PATHS (กันสำเนาหลุด sync)", () => {
+    expect(middlewareMatcher()).toEqual([...MATCHER_PATHS]);
   });
 
   it("matcher ครอบ protected path และ /login ตาม semantics ของ :path*", () => {

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -35,6 +36,8 @@ const CRUMB_LABELS: Record<string, string> = {
   "/catalog": "แคตตาล็อก",
   "/circulation": "เคาน์เตอร์ยืม-คืน",
   "/reservations": "คิวจอง",
+  "/profile": "โปรไฟล์ของฉัน",
+  "/settings": "การตั้งค่า",
 };
 
 function useBreadcrumb() {
@@ -120,13 +123,15 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             <span className="sr-only">เปิดเมนูบัญชี</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={8}>
-            <DropdownMenuLabel>แอดมินห้องสมุด</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>แอดมินห้องสมุด</DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(ROUTES.PROFILE)}>
               <UserIcon data-icon="inline-start" />
               โปรไฟล์ของฉัน
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(ROUTES.SETTINGS)}>
               <SettingsIcon data-icon="inline-start" />
               การตั้งค่า
             </DropdownMenuItem>

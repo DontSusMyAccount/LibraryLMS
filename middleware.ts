@@ -21,6 +21,8 @@ export const config = {
     "/circulation/:path*",
     "/reservations/:path*",
     "/members/:path*",
+    "/profile/:path*",
+    "/settings/:path*",
     "/my-loans/:path*",
     "/login",
   ],

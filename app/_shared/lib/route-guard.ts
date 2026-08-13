@@ -8,6 +8,8 @@ export const BACKOFFICE_PATHS = [
   "/circulation",
   "/reservations",
   "/members",
+  "/profile",
+  "/settings",
 ] as const;
 
 /** path ฝั่งผู้ยืม (student/faculty/staff portal) */
