@@ -84,7 +84,7 @@ export class UsersController {
 
   private async findById(params: { id: string }) {
     const result = await this.findUserUsecase.execute({
-      command: { studentOrStaffId: params.id },
+      query: { studentOrStaffId: params.id },
     });
     return { success: true as const, data: result.user };
   }

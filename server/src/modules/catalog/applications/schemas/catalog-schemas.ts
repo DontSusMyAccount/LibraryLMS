@@ -47,7 +47,7 @@ export interface IBookListItem extends BookWithCopies {
 
 export type IListBooksReturnType = Paginated<IBookListItem>;
 
-export interface IGetBookCommand {
+export interface IGetBookQuery {
   id: string;
 }
 

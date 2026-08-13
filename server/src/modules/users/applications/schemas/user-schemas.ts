@@ -15,7 +15,7 @@ export interface ICreateUserReturnType {
   user: UserPublic;
 }
 
-export type IFindUserCommand = { email: string } | { studentOrStaffId: string };
+export type IFindUserQuery = { email: string } | { studentOrStaffId: string };
 
 export interface IFindUserReturnType {
   user: UserPublic;

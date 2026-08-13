@@ -40,7 +40,7 @@ describe("FindUserUsecase", () => {
   it("ค้นหาด้วย studentOrStaffId คืน UserPublic ไม่มี passwordHash", async () => {
     const usecase = new FindUserUsecase(createRepository(buildUser()));
 
-    const result = await usecase.execute({ command: { studentOrStaffId: "610012345" } });
+    const result = await usecase.execute({ query: { studentOrStaffId: "610012345" } });
 
     expect(result.user.studentOrStaffId).toBe("610012345");
     expect(result.user.fullName).toBe("นิสิตทดสอบ");
@@ -50,7 +50,7 @@ describe("FindUserUsecase", () => {
   it("ค้นหาด้วย email คืน UserPublic ไม่มี passwordHash", async () => {
     const usecase = new FindUserUsecase(createRepository(buildUser()));
 
-    const result = await usecase.execute({ command: { email: "a@x.ac.th" } });
+    const result = await usecase.execute({ query: { email: "a@x.ac.th" } });
 
     expect(result.user.email).toBe("a@x.ac.th");
     expect(result.user).not.toHaveProperty("passwordHash");
@@ -60,14 +60,14 @@ describe("FindUserUsecase", () => {
     const usecase = new FindUserUsecase(createRepository(buildUser()));
 
     await expect(
-      usecase.execute({ command: { studentOrStaffId: "999999999" } }),
+      usecase.execute({ query: { studentOrStaffId: "999999999" } }),
     ).rejects.toBeInstanceOf(DomainNotFoundError);
   });
 
   it("หา email ไม่เจอ throw DomainNotFoundError", async () => {
     const usecase = new FindUserUsecase(createRepository(buildUser()));
 
-    await expect(usecase.execute({ command: { email: "ghost@x.ac.th" } })).rejects.toBeInstanceOf(
+    await expect(usecase.execute({ query: { email: "ghost@x.ac.th" } })).rejects.toBeInstanceOf(
       DomainNotFoundError,
     );
   });

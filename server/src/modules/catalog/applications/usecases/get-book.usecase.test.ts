@@ -62,7 +62,7 @@ describe("GetBookUsecase", () => {
       createCopyRepository(copies),
     );
 
-    const result = await usecase.execute({ command: { id: "b-1" } });
+    const result = await usecase.execute({ query: { id: "b-1" } });
 
     expect(result.book.id).toBe("b-1");
     expect(result.book.copies).toHaveLength(2);
@@ -72,7 +72,7 @@ describe("GetBookUsecase", () => {
   it("หนังสือไม่เจอ throw DomainNotFoundError", async () => {
     const usecase = new GetBookUsecase(createBookRepository(null), createCopyRepository([]));
 
-    await expect(usecase.execute({ command: { id: "b-missing" } })).rejects.toBeInstanceOf(
+    await expect(usecase.execute({ query: { id: "b-missing" } })).rejects.toBeInstanceOf(
       DomainNotFoundError,
     );
   });
@@ -80,7 +80,7 @@ describe("GetBookUsecase", () => {
   it("หนังสือไม่มี copy คืน copies ว่าง", async () => {
     const usecase = new GetBookUsecase(createBookRepository(buildBook()), createCopyRepository([]));
 
-    const result = await usecase.execute({ command: { id: "b-1" } });
+    const result = await usecase.execute({ query: { id: "b-1" } });
 
     expect(result.book.copies).toEqual([]);
   });

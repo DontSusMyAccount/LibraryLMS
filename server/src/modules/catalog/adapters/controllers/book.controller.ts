@@ -105,7 +105,7 @@ export class BookController {
   }
 
   private async getById(params: { id: string }) {
-    const result = await this.getBookUsecase.execute({ command: { id: params.id } });
+    const result = await this.getBookUsecase.execute({ query: { id: params.id } });
     return { success: true as const, data: result.book };
   }
 
