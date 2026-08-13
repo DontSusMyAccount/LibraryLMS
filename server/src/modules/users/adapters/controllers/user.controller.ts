@@ -4,11 +4,6 @@ import { Elysia } from "elysia";
 import { inject, injectable } from "tsyringe";
 
 import { authPlugin } from "../../../auth.plugin";
-import {
-  errorResponseSchema,
-  paginatedResponseSchema,
-  successResponseSchema,
-} from "../../../shared/schemas/response.schema";
 import { TOKENS } from "../../../tokens";
 import type {
   ICreateUserCommand,
@@ -23,10 +18,11 @@ import {
   createUserBodySchema,
   createUserSuccessResponseSchema,
   findUserParamsSchema,
+  findUserSuccessResponseSchema,
   searchUsersQuerySchema,
+  searchUsersSuccessResponseSchema,
   updateUserBodySchema,
   updateUserSuccessResponseSchema,
-  userPublicSchema,
   usersErrorResponseSchema,
 } from "./schemas/user.schema";
 
@@ -48,11 +44,11 @@ export class UsersController {
         app
           .get("/search", ({ query }) => this.search(query), {
             query: searchUsersQuerySchema,
-            response: { 200: paginatedResponseSchema(userPublicSchema), 404: errorResponseSchema },
+            response: { 200: searchUsersSuccessResponseSchema, 404: usersErrorResponseSchema },
           })
           .get("/:id", ({ params }) => this.findById(params), {
             params: findUserParamsSchema,
-            response: { 200: successResponseSchema(userPublicSchema), 404: errorResponseSchema },
+            response: { 200: findUserSuccessResponseSchema, 404: usersErrorResponseSchema },
           })
           .post("/", ({ body }) => this.create(body), {
             body: createUserBodySchema,

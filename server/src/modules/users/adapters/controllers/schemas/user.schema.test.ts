@@ -16,6 +16,7 @@ import {
   findUserParamsSchema,
   findUserSuccessResponseSchema,
   searchUsersQuerySchema,
+  searchUsersSuccessResponseSchema,
   updateUserBodySchema,
   updateUserSuccessResponseSchema,
   userPublicSchema,
@@ -186,6 +187,26 @@ describe("user.schema", () => {
     ).toBe(true);
     expect(Value.Check(searchUsersQuerySchema, { q: "นิสิต", role: "superadmin" })).toBe(false);
     expect(Value.Check(searchUsersQuerySchema, { q: "นิสิต", status: "unknown" })).toBe(false);
+  });
+
+  it("searchUsersSuccessResponseSchema เป็น canonical response ของ route search (envelope paginated, ไม่รั่ว passwordHash)", () => {
+    expect(
+      Value.Check(searchUsersSuccessResponseSchema, {
+        success: true,
+        data: [buildMember()],
+        total: 1,
+        page: 1,
+        limit: 12,
+        totalPages: 1,
+      }),
+    ).toBe(true);
+    expect(
+      (
+        searchUsersSuccessResponseSchema.properties.data as {
+          items: { properties: Record<string, unknown> };
+        }
+      ).items.properties,
+    ).not.toHaveProperty("passwordHash");
   });
 
   it("create/update success response envelope ตรวจ { success: true, data } และไม่มี passwordHash", () => {
