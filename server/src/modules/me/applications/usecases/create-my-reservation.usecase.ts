@@ -2,7 +2,10 @@ import "reflect-metadata";
 
 import { inject, injectable } from "tsyringe";
 
-import { CreateReservationUsecase } from "../../../reservations/applications/usecases/create-reservation.usecase";
+import {
+  createMyReservationPortToken,
+  type ICreateMyReservationPort,
+} from "../ports/create-my-reservation.port";
 import type {
   ICreateMyReservationCommand,
   ICreateMyReservationResult,
@@ -11,8 +14,8 @@ import type {
 @injectable()
 export class CreateMyReservationUsecase {
   constructor(
-    @inject(CreateReservationUsecase)
-    private readonly createReservationUsecase: CreateReservationUsecase,
+    @inject(createMyReservationPortToken)
+    private readonly createReservation: ICreateMyReservationPort,
   ) {}
 
   async execute({
@@ -22,7 +25,7 @@ export class CreateMyReservationUsecase {
     command: ICreateMyReservationCommand;
     actorId?: string;
   }): Promise<ICreateMyReservationResult> {
-    return this.createReservationUsecase.execute({
+    return this.createReservation.execute({
       command: { bookId: command.bookId, userId: command.userId },
       actorId,
     });

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DomainConflictError } from "../../../../domains/errors";
 import type { ReservationRecord } from "../../../../shared";
-import type { CreateReservationUsecase } from "../../../reservations/applications/usecases/create-reservation.usecase";
+import type { ICreateMyReservationPort } from "../ports/create-my-reservation.port";
 import { CreateMyReservationUsecase } from "./create-my-reservation.usecase";
 
 function buildReservation(): ReservationRecord {
@@ -20,7 +20,7 @@ describe("CreateMyReservationUsecase", () => {
   it("จองสำเร็จ — ส่ง userId จาก context (ห้ามรับจาก client)", async () => {
     const createUsecase = {
       execute: vi.fn(async () => ({ reservation: buildReservation() })),
-    } as unknown as CreateReservationUsecase;
+    } as unknown as ICreateMyReservationPort;
 
     const usecase = new CreateMyReservationUsecase(createUsecase);
     const result = await usecase.execute({
@@ -40,7 +40,7 @@ describe("CreateMyReservationUsecase", () => {
       execute: vi.fn(async () => {
         throw new DomainConflictError("สมาชิกรายนี้ได้จองหนังสือเล่มนี้ไว้แล้ว");
       }),
-    } as unknown as CreateReservationUsecase;
+    } as unknown as ICreateMyReservationPort;
 
     const usecase = new CreateMyReservationUsecase(createUsecase);
     await expect(

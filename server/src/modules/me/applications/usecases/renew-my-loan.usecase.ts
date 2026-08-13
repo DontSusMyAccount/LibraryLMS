@@ -7,7 +7,7 @@ import {
   loanRepositoryToken,
   type ILoanRepository,
 } from "../../../circulation/applications/ports/loan.repository";
-import { RenewUsecase } from "../../../circulation/applications/usecases/renew.usecase";
+import { renewLoanPortToken, type IRenewLoanPort } from "../ports/renew-my-loan.port";
 import type { IRenewMyLoanCommand, IRenewMyLoanResult } from "../schemas/me-schemas";
 
 const LOAN_NOT_FOUND_MESSAGE = "ไม่พบรายการยืมที่กำลังดำเนินอยู่";
@@ -17,7 +17,7 @@ const NOT_OWNER_MESSAGE = "ไม่มีสิทธิ์ดำเนิน�
 export class RenewMyLoanUsecase {
   constructor(
     @inject(loanRepositoryToken) private readonly loans: ILoanRepository,
-    @inject(RenewUsecase) private readonly renewUsecase: RenewUsecase,
+    @inject(renewLoanPortToken) private readonly renew: IRenewLoanPort,
   ) {}
 
   async execute({ command }: { command: IRenewMyLoanCommand }): Promise<IRenewMyLoanResult> {
@@ -29,7 +29,7 @@ export class RenewMyLoanUsecase {
       throw new DomainForbiddenError(NOT_OWNER_MESSAGE);
     }
 
-    return this.renewUsecase.execute({
+    return this.renew.execute({
       command: { id: command.id },
       actorId: command.userId,
     });

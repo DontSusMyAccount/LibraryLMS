@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { DomainForbiddenError, DomainNotFoundError } from "../../../../domains/errors";
 import type { LoanRecord } from "../../../../shared";
 import type { ILoanRepository } from "../../../circulation/applications/ports/loan.repository";
-import type { RenewUsecase } from "../../../circulation/applications/usecases/renew.usecase";
+import type { IRenewLoanPort } from "../ports/renew-my-loan.port";
 import { RenewMyLoanUsecase } from "./renew-my-loan.usecase";
 
 function buildLoan(overrides: Partial<LoanRecord> = {}): LoanRecord {
@@ -32,7 +32,7 @@ describe("RenewMyLoanUsecase", () => {
         loan: buildLoan({ dueAt: "2026-08-29T00:00:00.000Z", renewedCount: 1 }),
         dueDate: "2026-08-29T00:00:00.000Z",
       })),
-    } as unknown as RenewUsecase;
+    } as unknown as IRenewLoanPort;
 
     const usecase = new RenewMyLoanUsecase(loanRepo, renewUsecase);
     const result = await usecase.execute({ command: { id: "loan-1", userId: "u-1" } });
@@ -49,7 +49,7 @@ describe("RenewMyLoanUsecase", () => {
       findActiveLoanById: async () => buildLoan({ userId: "u-999" }),
     } as unknown as ILoanRepository;
 
-    const renewUsecase = { execute: vi.fn() } as unknown as RenewUsecase;
+    const renewUsecase = { execute: vi.fn() } as unknown as IRenewLoanPort;
 
     const usecase = new RenewMyLoanUsecase(loanRepo, renewUsecase);
     await expect(
@@ -63,7 +63,7 @@ describe("RenewMyLoanUsecase", () => {
       findActiveLoanById: async () => null,
     } as unknown as ILoanRepository;
 
-    const renewUsecase = { execute: vi.fn() } as unknown as RenewUsecase;
+    const renewUsecase = { execute: vi.fn() } as unknown as IRenewLoanPort;
 
     const usecase = new RenewMyLoanUsecase(loanRepo, renewUsecase);
     await expect(

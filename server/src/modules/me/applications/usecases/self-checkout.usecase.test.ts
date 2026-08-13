@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DomainConflictError, DomainForbiddenError } from "../../../../domains/errors";
 import type { LoanRecord } from "../../../../shared";
-import type { CheckoutUsecase } from "../../../circulation/applications/usecases/checkout.usecase";
+import type { ISelfCheckoutPort } from "../ports/self-checkout.port";
 import { SelfCheckoutUsecase } from "./self-checkout.usecase";
 
 const NOW = new Date("2026-08-20T00:00:00.000Z");
@@ -27,7 +27,7 @@ describe("SelfCheckoutUsecase", () => {
   it("ยืมสำเร็จ — ส่ง userId จาก context + actorId = ตัวเอง (checked_out_by = ตัวเอง)", async () => {
     const checkoutUsecase = {
       execute: vi.fn(async () => ({ loan: buildLoan(), dueDate: "2026-09-03T00:00:00.000Z" })),
-    } as unknown as CheckoutUsecase;
+    } as unknown as ISelfCheckoutPort;
 
     const usecase = new SelfCheckoutUsecase(checkoutUsecase);
     const result = await usecase.execute({
@@ -50,7 +50,7 @@ describe("SelfCheckoutUsecase", () => {
       execute: vi.fn(async () => {
         throw new DomainForbiddenError("ไม่สามารถยืมได้ เนื่องจากสมาชิกถูกระงับสิทธิ์การใช้งาน");
       }),
-    } as unknown as CheckoutUsecase;
+    } as unknown as ISelfCheckoutPort;
 
     const usecase = new SelfCheckoutUsecase(checkoutUsecase);
     await expect(
@@ -63,7 +63,7 @@ describe("SelfCheckoutUsecase", () => {
       execute: vi.fn(async () => {
         throw new DomainConflictError("สำเนาหนังสือนี้ไม่พร้อมให้ยืม");
       }),
-    } as unknown as CheckoutUsecase;
+    } as unknown as ISelfCheckoutPort;
 
     const usecase = new SelfCheckoutUsecase(checkoutUsecase);
     await expect(

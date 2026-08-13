@@ -4,8 +4,14 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { container } from "tsyringe";
 
 import { TOKENS } from "../tokens";
+import { CheckoutUsecase } from "../circulation/applications/usecases/checkout.usecase";
+import { RenewUsecase } from "../circulation/applications/usecases/renew.usecase";
+import { CreateReservationUsecase } from "../reservations/applications/usecases/create-reservation.usecase";
 import { DrizzleMeRepository } from "./adapters/repository/me.drizzle.repository";
 import { meRepositoryToken } from "./applications/ports/me.repository";
+import { createMyReservationPortToken } from "./applications/ports/create-my-reservation.port";
+import { renewLoanPortToken } from "./applications/ports/renew-my-loan.port";
+import { selfCheckoutPortToken } from "./applications/ports/self-checkout.port";
 import { CancelMyReservationUsecase } from "./applications/usecases/cancel-my-reservation.usecase";
 import { CreateMyReservationUsecase } from "./applications/usecases/create-my-reservation.usecase";
 import { GetMeUsecase } from "./applications/usecases/get-me.usecase";
@@ -28,6 +34,10 @@ export function registerMeModule(deps: MeModuleDeps): void {
   container.register(TOKENS.InternalSecret, { useValue: deps.internalSecret });
 
   container.register(meRepositoryToken, { useClass: DrizzleMeRepository });
+
+  container.register(selfCheckoutPortToken, { useToken: CheckoutUsecase });
+  container.register(createMyReservationPortToken, { useToken: CreateReservationUsecase });
+  container.register(renewLoanPortToken, { useToken: RenewUsecase });
 
   container.register(GetMeUsecase, { useClass: GetMeUsecase });
   container.register(ListMyLoansUsecase, { useClass: ListMyLoansUsecase });

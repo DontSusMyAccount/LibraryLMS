@@ -2,12 +2,12 @@ import "reflect-metadata";
 
 import { inject, injectable } from "tsyringe";
 
-import { CheckoutUsecase } from "../../../circulation/applications/usecases/checkout.usecase";
+import { selfCheckoutPortToken, type ISelfCheckoutPort } from "../ports/self-checkout.port";
 import type { ISelfCheckoutCommand, ISelfCheckoutResult } from "../schemas/me-schemas";
 
 @injectable()
 export class SelfCheckoutUsecase {
-  constructor(@inject(CheckoutUsecase) private readonly checkoutUsecase: CheckoutUsecase) {}
+  constructor(@inject(selfCheckoutPortToken) private readonly checkout: ISelfCheckoutPort) {}
 
   async execute({
     command,
@@ -18,7 +18,7 @@ export class SelfCheckoutUsecase {
     actorId?: string;
     now?: Date;
   }): Promise<ISelfCheckoutResult> {
-    return this.checkoutUsecase.execute({
+    return this.checkout.execute({
       command: { copyCode: command.copyCode, userId: command.userId },
       actorId,
       now,
