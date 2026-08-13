@@ -1,7 +1,7 @@
+import { buildApp, UPLOADS_ROOT } from "./app.factory";
 import { createDatabaseClient } from "./libs/db";
 import { parseEnv } from "./libs/env";
 import type { Env } from "./libs/env";
-import { buildApp, UPLOADS_ROOT } from "./app.factory";
 import { createAppModule } from "./modules/app.module";
 import type { R2StorageConfig } from "./modules/storage/adapters/repository/r2.storage.repository";
 
@@ -25,19 +25,29 @@ function resolveR2Config(env: Env): R2StorageConfig | undefined {
   };
 }
 
-const env = parseEnv(process.env);
-const { db } = createDatabaseClient(env.DATABASE_URL);
+/**
+ * สร้าง Elysia app จาก env record (ไม่แตะ process.env — ใช้ได้ทั้ง Bun และ Cloudflare Workers)
+ * สำหรับ Bun: worker.ts เรียกตอน module load แล้ว app.listen()
+ * สำหรับ Workers: worker.cloudflare.ts เรียกแบบ lazy ใน fetch handler
+ */
+export function createAppFromEnv(envInput: Record<string, string | undefined>) {
+  const env = parseEnv(envInput);
+  const { db } = createDatabaseClient(env.DATABASE_URL);
 
-const appModuleDeps = {
-  db,
-  jwtSecret: env.JWT_SECRET,
-  internalSecret: env.INTERNAL_SECRET,
-  storageDriver: env.storageDriver,
-  r2Config: resolveR2Config(env),
-  uploadRoot: UPLOADS_ROOT,
-};
-const appModule = createAppModule(appModuleDeps);
+  const appModuleDeps = {
+    db,
+    jwtSecret: env.JWT_SECRET,
+    internalSecret: env.INTERNAL_SECRET,
+    storageDriver: env.storageDriver,
+    r2Config: resolveR2Config(env),
+    uploadRoot: UPLOADS_ROOT,
+  };
+  const appModule = createAppModule(appModuleDeps);
 
-export const app = buildApp(appModule);
+  return buildApp(appModule, {
+    isDev: envInput.NODE_ENV !== "production",
+    mountUploadsRoute: env.storageDriver === "local",
+  });
+}
 
-export type App = typeof app;
+export type App = ReturnType<typeof createAppFromEnv>;
