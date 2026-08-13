@@ -102,6 +102,44 @@ function buildDefaultValues(member: MemberListItem | null): MemberFormValues {
   };
 }
 
+const PASSWORD_MISMATCH_MESSAGE = "รหัสผ่านไม่ตรงกัน";
+
+const PASSWORD_MISMATCH_REFINE_PARAMS = {
+  path: ["confirmPassword"],
+  message: PASSWORD_MISMATCH_MESSAGE,
+};
+
+function buildMemberFormSchema(isEdit: boolean): z.ZodType<MemberFormValues, MemberFormValues> {
+  const sharedFields = {
+    email: z.string().trim().min(1, "กรุณากรอกอีเมล").email("รูปแบบอีเมลไม่ถูกต้อง"),
+    fullName: z.string().trim().min(1, "กรุณากรอกชื่อ-นามสกุล"),
+    role: z.enum(USER_ROLES, { message: "กรุณาเลือกบทบาท" }),
+    memberType: z.enum(MEMBER_TYPES).optional(),
+    studentOrStaffId: z.string().optional(),
+    phone: z.string().optional(),
+  };
+
+  if (isEdit) {
+    return z.object({
+      ...sharedFields,
+      status: z.enum(USER_STATUSES, { message: "กรุณาเลือกสถานะ" }),
+      password: z.string().optional(),
+      confirmPassword: z.string().optional(),
+    });
+  }
+
+  return z
+    .object({
+      ...sharedFields,
+      password: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"),
+      confirmPassword: z.string().min(1, "กรุณากรอกรหัสผ่านยืนยัน"),
+    })
+    .refine(
+      (values) => values.confirmPassword === values.password,
+      PASSWORD_MISMATCH_REFINE_PARAMS,
+    );
+}
+
 interface MemberFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -115,62 +153,7 @@ function MemberFormDialog({ open, onOpenChange, member }: MemberFormDialogProps)
   const [submitError, setSubmitError] = useState<string | null>(null);
   const memberTypeTouched = useRef(false);
 
-  const memberFormSchema = useMemo(
-    () =>
-      z
-        .object({
-          email: z.string().trim().min(1, "กรุณากรอกอีเมล").email("รูปแบบอีเมลไม่ถูกต้อง"),
-          fullName: z.string().trim().min(1, "กรุณากรอกชื่อ-นามสกุล"),
-          role: z.enum(USER_ROLES, { message: "กรุณาเลือกบทบาท" }),
-          password: z.string().optional(),
-          confirmPassword: z.string().optional(),
-          status: z.enum(USER_STATUSES, { message: "กรุณาเลือกสถานะ" }).optional(),
-          memberType: z.enum(MEMBER_TYPES).optional(),
-          studentOrStaffId: z.string().optional(),
-          phone: z.string().optional(),
-        })
-        .superRefine((values, context) => {
-          if (isEdit) {
-            if (!values.status) {
-              context.addIssue({
-                code: "custom",
-                path: ["status"],
-                message: "กรุณาเลือกสถานะ",
-              });
-            }
-            return;
-          }
-          const password = values.password ?? "";
-          if (!password) {
-            context.addIssue({
-              code: "custom",
-              path: ["password"],
-              message: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
-            });
-          } else if (password.length < 8) {
-            context.addIssue({
-              code: "custom",
-              path: ["password"],
-              message: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
-            });
-          }
-          const confirmPassword = values.confirmPassword ?? "";
-          if (!confirmPassword) {
-            context.addIssue({
-              code: "custom",
-              path: ["confirmPassword"],
-              message: "กรุณากรอกรหัสผ่านยืนยัน",
-            });
-          } else if (confirmPassword !== password) {
-            context.addIssue({
-              code: "custom",
-              path: ["confirmPassword"],
-              message: "รหัสผ่านไม่ตรงกัน",
-            });
-          }
-        }),
-    [isEdit],
-  );
+  const memberFormSchema = useMemo(() => buildMemberFormSchema(isEdit), [isEdit]);
 
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberFormSchema),
@@ -507,6 +490,6 @@ function MemberFormDialog({ open, onOpenChange, member }: MemberFormDialogProps)
   );
 }
 
-export { MemberFormDialog };
+export { MemberFormDialog, buildMemberFormSchema };
 
-export type { MemberFormDialogProps };
+export type { MemberFormDialogProps, MemberFormValues };
