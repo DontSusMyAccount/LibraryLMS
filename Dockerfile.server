@@ -1,7 +1,15 @@
-FROM oven/bun:1 AS base
+FROM oven/bun:1 AS builder
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY . .
+RUN bun run api:build
+
+FROM oven/bun:1
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+COPY --from=builder /app/dist ./dist
 EXPOSE 3001
-CMD ["bun", "run", "api:dev"]
+CMD ["bun", "run", "api:start"]
