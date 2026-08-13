@@ -54,9 +54,22 @@ function getApp(env: WorkerEnv): App {
   return cachedApp;
 }
 
+const API_ROUTE_PREFIX = "/api-backend";
+
+/** ตัด prefix /api-backend ออกจาก pathname (web worker เรียกผ่าน BFF proxy ด้วย apiUrl + path) */
+function stripApiPrefix(request: Request): Request {
+  const url = new URL(request.url);
+  if (!url.pathname.startsWith(API_ROUTE_PREFIX)) {
+    return request;
+  }
+  const strippedUrl = new URL(request.url);
+  strippedUrl.pathname = url.pathname.slice(API_ROUTE_PREFIX.length) || "/";
+  return new Request(strippedUrl.toString(), request);
+}
+
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
     const app = getApp(env);
-    return app.fetch(request);
+    return app.fetch(stripApiPrefix(request));
   },
 };
