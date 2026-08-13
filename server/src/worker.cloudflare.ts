@@ -11,7 +11,6 @@ import type { App } from "./app";
 // Elysia compile request handler ด้วย Function() constructor (aot) โดย default
 // ซึ่ง Workers runtime ห้าม ("Code generation from strings disallowed") —
 // ปิด aot ให้ใช้ createDynamicHandler แทน (อ่านจาก process.env ทุก instance)
-// @ts-expect-error nodejs_compat ให้ process.env บน Workers
 process.env.ELYSIA_AOT = "false";
 
 interface HyperdriveBinding {
