@@ -1,5 +1,5 @@
 {
-  "name": "library-lms",
+  "name": "librarylms",
   "scripts": {
     "dev": "bun run scripts/dev.ts",
     "dev:web": "next dev -p 3000",
