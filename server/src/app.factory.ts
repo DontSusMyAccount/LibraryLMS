@@ -4,6 +4,7 @@ import { type AnyElysia, Elysia } from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 
 import { toHttpError } from "./libs/http-error.factory";
+import { DomainError } from "./domains/errors";
 import { createUploadsRoute } from "./modules/storage/uploads.route";
 
 const isProd = (env: Record<string, string | undefined>) => env.NODE_ENV === "production";
@@ -46,6 +47,24 @@ export function buildApp<T extends AnyElysia>(appModule: T, options: CreateAppOp
       }),
     )
     .onError(({ code, error, set }) => {
+      // log error จริงก่อนกลืนเป็น 500 generic — ตอนนี้ DB/connection error ที่
+      // ไม่ใช่ DomainError ถูกซ่อนไว้หมด ทำให้วินิจฉัยจาก prod ไม่ได้
+      if (code === "INTERNAL_SERVER_ERROR" || !(error instanceof DomainError)) {
+        console.error("[api-error]", {
+          code,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        if (error instanceof Error && error.stack) {
+          console.error("[api-error] stack:", error.stack);
+        }
+        // DrizzleQueryError ห่อ error จริง (socket/connection) ไว้ใน .cause — log ด้วยเพื่อปัก root cause
+        const cause = error instanceof Error ? (error as { cause?: unknown }).cause : undefined;
+        if (cause instanceof Error) {
+          console.error("[api-error] cause:", { message: cause.message, stack: cause.stack });
+        } else if (cause !== undefined) {
+          console.error("[api-error] cause:", String(cause));
+        }
+      }
       const httpError = toHttpError(error, code);
       set.status = httpError.statusCode;
       return httpError.body;
