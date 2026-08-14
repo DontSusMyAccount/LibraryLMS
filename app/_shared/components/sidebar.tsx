@@ -58,7 +58,9 @@ interface SidebarContentProps {
 function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const session = useAuthStore((state) => state.session);
 
+  const userFullName = session?.fullName ?? "ผู้ใช้งาน";
   const handleLogout = async () => {
     await useAuthStore.getState().signOut();
     router.push(ROUTES.AUTH_SIGNIN);
@@ -145,18 +147,16 @@ function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
         >
           <Avatar className="size-9 bg-brand-500/20">
             <AvatarFallback className="bg-transparent text-sm font-semibold text-brand-300">
-              อ
+              {userFullName.charAt(0) || "อ"}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <>
               <div className="min-w-0 flex-1 leading-tight">
                 <p className="truncate text-label font-medium text-sidebar-foreground">
-                  แอดมินห้องสมุด
+                  {userFullName}
                 </p>
-                <p className="truncate text-caption text-sidebar-foreground/50">
-                  admin@library.local
-                </p>
+                <p className="truncate text-caption text-sidebar-foreground/50">{session?.email}</p>
               </div>
               <Button
                 variant="ghost"

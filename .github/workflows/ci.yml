@@ -48,6 +48,8 @@ jobs:
       AUTH_SECRET: ci-only-auth-secret-0123456789abcdef
       INTERNAL_SECRET: ci-internal-secret-0123456789
       NEXT_PUBLIC_API_URL: http://localhost:3001
+      # seed สร้าง admin ด้วย password นี้ (e2e/integration ใช้ login จริง)
+      SEED_ADMIN_PASSWORD: Admin@1234
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

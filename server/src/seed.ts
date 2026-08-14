@@ -14,8 +14,30 @@ import { createDatabaseClient } from "./libs/db";
 import { parseEnv } from "./libs/env";
 
 const DEMO_ADMIN_EMAIL = "admin@library.local";
-const DEMO_ADMIN_PASSWORD = "Admin@1234";
 const DEMO_ADMIN_NAME = "ผู้ดูแลระบบ";
+
+/**
+ * รหัสผ่าน admin ตัวอย่าง — ไม่ hardcode ในโค้ดอีกต่อไป (เดิม Admin@1234 เปิดใน
+ * sidebar + audit docs): อ่านจาก env SEED_ADMIN_PASSWORD; ถ้าไม่ตั้งจะสุ่มใหม่
+ * แล้ว print ออกมา 1 ครั้ง (CI/e2e ตั้งค่านี้ให้ชัดเจน)
+ */
+function resolveAdminPassword(): string {
+  const fromEnv = process.env.SEED_ADMIN_PASSWORD?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+  // 12 ตัวอักษร ผสม upper/lower/digit/symbol — กันเครื่องมือจำแนกง่ายเกิน
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+  const random = Array.from(
+    { length: 12 },
+    () => chars[Math.floor(Math.random() * chars.length)],
+  ).join("");
+  console.warn(
+    "[seed] ไม่พบ SEED_ADMIN_PASSWORD — สุ่มรหัสผ่าน admin ตัวอย่างให้แล้ว " +
+      "(รหัสจะแสดงครั้งเดียวด้านล่าง; ตั้ง SEED_ADMIN_PASSWORD เพื่อกำหนดเอง)",
+  );
+  return random;
+}
 
 const TRIGGERS_SQL_PATH = path.resolve(
   import.meta.dir,
@@ -125,7 +147,6 @@ async function main(): Promise<void> {
     const triggersSql = readFileSync(TRIGGERS_SQL_PATH, "utf8");
     await client.unsafe(triggersSql);
     console.log("[seed] ใช้ triggers.sql (updated_at trigger) เรียบร้อย");
-
     const hasPolicies = await db
       .select({ id: borrowingPolicies.id })
       .from(borrowingPolicies)
@@ -159,7 +180,8 @@ async function main(): Promise<void> {
       .where(eq(users.email, DEMO_ADMIN_EMAIL))
       .limit(1);
     if (existingAdmin.length === 0) {
-      const passwordHash = await bcrypt.hash(DEMO_ADMIN_PASSWORD, 12);
+      const adminPassword = resolveAdminPassword();
+      const passwordHash = await bcrypt.hash(adminPassword, 12);
       await db.insert(users).values({
         email: DEMO_ADMIN_EMAIL,
         passwordHash,
@@ -167,6 +189,7 @@ async function main(): Promise<void> {
         role: "admin",
       });
       console.log(`[seed] เพิ่มผู้ดูแลระบบตัวอย่าง ${DEMO_ADMIN_EMAIL}`);
+      console.log(`[seed] รหัสผ่าน admin ตัวอย่าง: ${adminPassword}`);
     } else {
       console.log("[seed] ผู้ดูแลระบบตัวอย่างมีอยู่แล้ว — ข้าม");
     }

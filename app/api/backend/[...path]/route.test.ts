@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 import type { UserRole, UserStatus } from "@libsys/shared";
 
@@ -8,7 +9,7 @@ const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 
 vi.mock("@/auth", () => ({ auth: authMock }));
 
-import { handleProxyRequest } from "./route";
+import { handleProxyRequest, POST } from "./route";
 
 const API_URL = "https://api.example.test";
 const INTERNAL_SECRET = "test-internal-secret-value";
@@ -174,5 +175,48 @@ describe("app/api/backend/[...path] proxy route", () => {
     fetchMock.mockResolvedValue(okResponse());
     const posted = await handleProxyRequest(proxyInput(["loans"], "POST"));
     expect(posted.headers.get("cache-control")).toBeNull();
+  });
+
+  describe("proxyRoute — body size limit", () => {
+    function postWithBody(body: string, extraHeaders: Record<string, string> = {}) {
+      return POST(
+        new NextRequest("http://localhost/api/backend/loans", {
+          method: "POST",
+          headers: requestHeaders({ "content-type": "application/json", ...extraHeaders }),
+          body,
+        }),
+        { params: Promise.resolve({ path: ["loans"] }) },
+      );
+    }
+
+    it("rejects 413 when content-length exceeds 10MB (ไม่ต้องแตะ backend)", async () => {
+      authMock.mockResolvedValue(buildSession(ACTIVE_USER));
+
+      const response = await postWithBody("", { "content-length": String(11 * 1024 * 1024) });
+      expect(response.status).toBe(413);
+      const body = (await response.json()) as { success?: boolean; error?: string };
+      expect(body.error).toContain("ใหญ่เกินกำหนด");
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("rejects 413 when actual body exceeds 10MB (chunked / ไม่มี content-length)", async () => {
+      authMock.mockResolvedValue(buildSession(ACTIVE_USER));
+      const oversizedBody = "x".repeat(10 * 1024 * 1024 + 1);
+
+      const response = await postWithBody(oversizedBody);
+      expect(response.status).toBe(413);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("passes through bodies under the limit", async () => {
+      authMock.mockResolvedValue(buildSession(ACTIVE_USER));
+      fetchMock.mockResolvedValue(okResponse());
+
+      const response = await postWithBody(JSON.stringify({ title: "หนังสือ" }), {
+        "content-length": "25",
+      });
+      expect(response.status).toBe(200);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
   });
 });
