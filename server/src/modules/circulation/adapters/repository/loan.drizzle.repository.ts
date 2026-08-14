@@ -23,12 +23,15 @@ import type {
   UserRole,
 } from "../../../../shared";
 import { TOKENS } from "../../../tokens";
+import { DrizzleAuditRepository } from "../../../catalog/adapters/repository/audit.drizzle.repository";
 import type {
+  ICheckoutUnitOfWork,
   ICreateFineInput,
   ICreateLoanInput,
   ILoanRepository,
   IMemberInfo,
   IReturnLoanInput,
+  ITransactionalLoanRepository,
 } from "../../applications/ports/loan.repository";
 
 type LoanRow = typeof loans.$inferSelect;
@@ -101,8 +104,25 @@ function toCopy(row: CopyRow): BookCopy {
 }
 
 @injectable()
-export class DrizzleLoanRepository implements ILoanRepository {
+export class DrizzleLoanRepository implements ILoanRepository, ITransactionalLoanRepository {
   constructor(@inject(TOKENS.Db) private readonly db: PostgresJsDatabase) {}
+
+  /**
+   * รัน fn ใน DB transaction — repos ที่ได้เป็น transaction-scoped ถ้า fn throw
+   * → rollback ทั้งหมด (ใช้ตอนเขียนหลายตารางที่ต้อง atomic)
+   *
+   * หมายเหตุ: import DrizzleAuditRepository ข้ามโมดูล (catalog → circulation)
+   * เพราะ UoW ต้องครอบทั้ง loans + audit logs — depcruise อนุญาต
+   */
+  async runTransaction<T>(fn: (unit: ICheckoutUnitOfWork) => Promise<T>): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      const txDb = tx as unknown as PostgresJsDatabase;
+      return fn({
+        loans: new DrizzleLoanRepository(txDb),
+        audit: new DrizzleAuditRepository(txDb),
+      });
+    });
+  }
 
   async findMemberById(userId: string): Promise<IMemberInfo | null> {
     const rows = await this.db

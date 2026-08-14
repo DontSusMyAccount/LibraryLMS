@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { DrizzleAuditRepository } from "../../../catalog/adapters/repository/audit.drizzle.repository";
 import { registerCatalogModule } from "../../../catalog/catalog.module";
-import { CheckoutUsecase } from "../../../circulation/applications/usecases/checkout.usecase";
+import { CheckinUsecase } from "../../../circulation/applications/usecases/checkin.usecase";
 import { registerCirculationModule } from "../../../circulation/circulation.module";
 import { CancelMyReservationUsecase } from "../../../me/applications/usecases/cancel-my-reservation.usecase";
 import { registerMeModule } from "../../../me/me.module";
@@ -43,9 +43,9 @@ describe("shared AuditPort DI resolution (Task 1)", () => {
     expect(audit).toBeInstanceOf(DrizzleAuditRepository);
   });
 
-  it("Circulation CheckoutUsecase ได้รับ audit ที่ฉีดผ่าน shared token", () => {
-    const checkout = container.resolve(CheckoutUsecase) as unknown as AuditInjected;
-    expect(checkout.audit).toBeInstanceOf(DrizzleAuditRepository);
+  it("Circulation CheckinUsecase ได้รับ audit ที่ฉีดผ่าน shared token", () => {
+    const checkin = container.resolve(CheckinUsecase) as unknown as AuditInjected;
+    expect(checkin.audit).toBeInstanceOf(DrizzleAuditRepository);
   });
 
   it("Reservations CreateReservationUsecase ได้รับ audit ที่ฉีดผ่าน shared token", () => {

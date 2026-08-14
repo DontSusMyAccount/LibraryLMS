@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { and, eq } from "drizzle-orm";
+
+import { auditLogs, bookCopies, loans } from "../../infrastructure/database/schema";
+import { DrizzleLoanRepository } from "../../modules/circulation/adapters/repository/loan.drizzle.repository";
 import {
   authHeaders,
   bootstrapTestContext,
@@ -53,6 +57,15 @@ describe("Circulation — real DB", () => {
     expect(checkoutData.loan.status).toBe("active");
     expect(new Date(checkoutData.dueDate).getTime()).toBeGreaterThan(Date.now());
     ctx.rows.loanIds.push(checkoutData.loan.id);
+
+    // audit trail ถูกเขียนใน transaction เดียวกับ loan + copy status
+    const auditRows = await ctx.db
+      .select({ id: auditLogs.id })
+      .from(auditLogs)
+      .where(
+        and(eq(auditLogs.action, "loan.created"), eq(auditLogs.entityId, checkoutData.loan.id)),
+      );
+    expect(auditRows).toHaveLength(1);
 
     // active loans
     const activeResponse = await ctx.request(`/circulation/loans/active?userId=${member.id}`, {
@@ -111,5 +124,41 @@ describe("Circulation — real DB", () => {
     });
     expect(second.status).toBe(409);
     expect(second.body?.success).toBe(false);
+  });
+
+  it("transaction: fn throw → rollback ทั้ง loan + copy status (ไม่เหลือครึ่งๆ)", async () => {
+    const book = await createBookViaApi(ctx, ctx.unique("co4"));
+    const copy = await createCopyViaApi(ctx, book.id, ctx.unique("copy4"));
+    const member = await ctx.createMember("member4");
+
+    const repo = new DrizzleLoanRepository(ctx.db);
+    await expect(
+      repo.runTransaction(async (unit) => {
+        await unit.loans.createLoan({
+          copyId: copy.id,
+          userId: member.id,
+          dueAt: new Date(Date.now() + 14 * 86_400_000).toISOString(),
+          loanPeriodDays: 14,
+          dailyFineRate: 5,
+        });
+        await unit.loans.updateCopyStatus(copy.id, "borrowed");
+        throw new Error("boom");
+      }),
+    ).rejects.toThrow("boom");
+
+    // ไม่มี loan ค้างอยู่ → rollback ทำงาน
+    const loansAfter = await ctx.db
+      .select({ id: loans.id })
+      .from(loans)
+      .where(eq(loans.userId, member.id));
+    expect(loansAfter).toHaveLength(0);
+
+    // copy status ไม่เปลี่ยน → rollback ทำงาน
+    const [copyAfter] = await ctx.db
+      .select({ status: bookCopies.status })
+      .from(bookCopies)
+      .where(eq(bookCopies.id, copy.id))
+      .limit(1);
+    expect(copyAfter?.status ?? null).toBe("available");
   });
 });
