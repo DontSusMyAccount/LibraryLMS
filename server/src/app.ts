@@ -1,5 +1,5 @@
 import { buildApp, UPLOADS_ROOT } from "./app.factory";
-import { createDatabaseClient } from "./libs/db";
+import { createDatabaseClient, type DbConnection } from "./libs/db";
 import { parseEnv } from "./libs/env";
 import type { Env } from "./libs/env";
 import { createAppModule } from "./modules/app.module";
@@ -29,10 +29,15 @@ function resolveR2Config(env: Env): R2StorageConfig | undefined {
  * สร้าง Elysia app จาก env record (ไม่แตะ process.env — ใช้ได้ทั้ง Bun และ Cloudflare Workers)
  * สำหรับ Bun: worker.ts เรียกตอน module load แล้ว app.listen()
  * สำหรับ Workers: worker.cloudflare.ts เรียกแบบ lazy ใน fetch handler
+ *
+ * คืน dbConnection ด้วย — Workers ต้องเรียก `client.end()` หลังจบ request
+ * (สร้าง client ใหม่ทุก request ตามคำแนะนำ Hyperdrive; ถ้าไม่ปิด connection จะค้าง
+ * ชน Workers limit ต่อ isolate → 503)
  */
-export function createAppFromEnv(envInput: Record<string, string | undefined>) {
+export function createAppFromEnv(envInput: Record<string, string | undefined>): AppWithConnection {
   const env = parseEnv(envInput);
-  const { db } = createDatabaseClient(env.DATABASE_URL);
+  const dbConnection = createDatabaseClient(env.DATABASE_URL);
+  const { db } = dbConnection;
 
   const appModuleDeps = {
     db,
@@ -44,10 +49,17 @@ export function createAppFromEnv(envInput: Record<string, string | undefined>) {
   };
   const appModule = createAppModule(appModuleDeps);
 
-  return buildApp(appModule, {
+  const app = buildApp(appModule, {
     isDev: envInput.NODE_ENV !== "production",
     mountUploadsRoute: env.storageDriver === "local",
   });
+
+  return { app, dbConnection };
 }
 
-export type App = ReturnType<typeof createAppFromEnv>;
+export interface AppWithConnection {
+  app: App;
+  dbConnection: DbConnection;
+}
+
+export type App = ReturnType<typeof buildApp<ReturnType<typeof createAppModule>>>;
