@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { index, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 import { categories } from "./categories";
 
@@ -23,5 +32,9 @@ export const books = pgTable(
     index("idx_books_title_trgm").using("gin", sql`${table.title} gin_trgm_ops`),
     index("idx_books_author_trgm").using("gin", sql`${table.author} gin_trgm_ops`),
     index("idx_books_category").on(table.categoryId),
+    // findByIsbn (เช็คซ้ำตอน create) เร็ว + ป้องกัน ISBN ซ้ำที่ DB level (nullable → partial)
+    uniqueIndex("uq_books_isbn")
+      .on(table.isbn)
+      .where(sql`${table.isbn} IS NOT NULL`),
   ],
 );

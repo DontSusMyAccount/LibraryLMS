@@ -75,6 +75,8 @@ CREATE TABLE users (
 );
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_branch ON users(branch_id);
+CREATE INDEX idx_users_fullname_trgm ON users USING GIN (full_name gin_trgm_ops);
+CREATE INDEX idx_users_email_trgm ON users USING GIN (email gin_trgm_ops);
 COMMENT ON TABLE users IS 'ผู้ใช้ทุกบทบาท; member_type ใช้แยกสิทธิ์นักศึกษา ป.ตรี/บัณฑิตศึกษา ตามข้อกำหนด 6';
 
 -- ----------------------------------------------------------------------------
@@ -129,6 +131,7 @@ CREATE TABLE books (
 CREATE INDEX idx_books_title_trgm ON books USING GIN (title gin_trgm_ops);
 CREATE INDEX idx_books_author_trgm ON books USING GIN (author gin_trgm_ops);
 CREATE INDEX idx_books_category ON books(category_id);
+CREATE UNIQUE INDEX uq_books_isbn ON books(isbn) WHERE isbn IS NOT NULL;
 COMMENT ON TABLE books IS 'ระเบียนบรรณานุกรม (title) — แยกจากสำเนาจริงแต่ละเล่ม (book_copies) ตามแนวทาง ILS';
 
 -- ----------------------------------------------------------------------------
