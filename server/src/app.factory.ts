@@ -5,11 +5,18 @@ import { rateLimit } from "elysia-rate-limit";
 
 import { toHttpError } from "./libs/http-error.factory";
 import { DomainError } from "./domains/errors";
+import { PersistentDefaultContext } from "./libs/persistent-rate-limit.context";
 import { createUploadsRoute } from "./modules/storage/uploads.route";
 
 const isProd = (env: Record<string, string | undefined>) => env.NODE_ENV === "production";
 
 export const UPLOADS_ROOT = "uploads";
+
+/**
+ * Cloudflare Workers: app ถูก build ใหม่ทุก request (สร้าง DB client ใหม่ทุกครั้ง
+ * ตามคำแนะนำ Hyperdrive) — rate-limit store ต้องอยู่ระดับ module ไม่งั้นถูกรีเซ็ตทุก request
+ */
+const rateLimitContext = new PersistentDefaultContext();
 
 export interface CreateAppOptions {
   isDev?: boolean;
@@ -33,7 +40,7 @@ export function buildApp<T extends AnyElysia>(appModule: T, options: CreateAppOp
     )
     // 100/นาที/ต่อ IP ต่ำเกินไปสำหรับการใช้งานจริง (admin dashboard + หน้าจัดการหลายรายการ)
     // และทำให้ e2e suite ล้ม (ทุก request จาก IP เดียว ::1) — 1000/นาที กัน abuse ได้พอสมควร
-    .use(rateLimit({ max: 1000, duration: 60_000 }))
+    .use(rateLimit({ max: 1000, duration: 60_000, context: rateLimitContext }))
     .use(
       openapi({
         enabled: isDev,
