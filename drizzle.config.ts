@@ -23,4 +23,8 @@ export default defineConfig({
   dbCredentials: {
     url: resolveDatabaseUrl(process.env as Record<string, string | undefined>),
   },
+  // quirk: db:push กับ DB ที่ setup มาก่อน (เช่น Render/Neon) อาจ fail
+  // "column id is in a primary key" (SQLSTATE 42P16) — เป็น diff ระหว่าง
+  // drizzle-kit กับ constraint เดิม ไม่เกี่ยวกับ schema นี้
+  // ถ้าเจอ ให้รัน statements ใน drizzle/<latest>.sql ตรงๆ แทน db:push
 });
