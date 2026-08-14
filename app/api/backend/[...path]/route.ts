@@ -3,6 +3,11 @@ import type { NextRequest } from "next/server";
 
 const PROXY_TIMEOUT_MS = 30_000;
 
+// จำกัดขนาด body ที่ BFF ส่งต่อให้ backend — ป้องกัน DoS ผ่าน request ตัวใหญ่
+// (เดิมอ่านทั้ง body เข้า memory โดยไม่มีขีดจำกัด)
+const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10MB
+const BODY_TOO_LARGE_MESSAGE = "ข้อมูลที่ส่งมามีขนาดใหญ่เกินกำหนด";
+
 const CATEGORY_CACHE_CONTROL = "public, max-age=300";
 const DEFAULT_GET_CACHE_CONTROL = "no-store";
 
@@ -109,7 +114,20 @@ async function proxyRoute(
   context: { params: Promise<{ path: string[] }> },
 ): Promise<Response> {
   const { path } = await context.params;
+
+  // content-length ที่ browser ประกาศมาเกิน limit → reject ทันที ไม่ต้องอ่าน body
+  const declaredLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    return proxyError(413, BODY_TOO_LARGE_MESSAGE);
+  }
+
+  // chunked/ไม่ประกาศ content-length → อ่านแล้วตรวจ byteLength (browser ส่วนใหญ่
+  // ตั้ง content-length ให้อัตโนมัติ แต่กันกรณีที่ส่งแบบ chunked)
   const body = await request.arrayBuffer();
+  if (body.byteLength > MAX_BODY_BYTES) {
+    return proxyError(413, BODY_TOO_LARGE_MESSAGE);
+  }
+
   return handleProxyRequest({
     method: request.method,
     path,

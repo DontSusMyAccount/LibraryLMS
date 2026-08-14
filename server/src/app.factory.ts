@@ -20,7 +20,16 @@ export function buildApp<T extends AnyElysia>(appModule: T, options: CreateAppOp
   const mountUploadsRoute = options.mountUploadsRoute ?? true;
 
   const app = new Elysia()
-    .use(cors())
+    // CORS: prod จำกัดเฉพาะ web app origin เท่านั้น (mirror ไว้ทั้งสองรูปแบบ)
+    // — frontend เรียก API ผ่าน BFF same-origin เป็นหลัก แต่ถ้ามีใครเรียก API เว็บตรง
+    //   ก็ต้องไม่ allow ทุก origin + credentials (เดิม default สะท้อน origin กลับทั้งหมด)
+    // — dev ปล่อยกว้าง (localhost + e2e ใช้ eden เรียกตรง)
+    .use(
+      cors({
+        origin: isDev ? true : /^https:\/\/(attpon\.online|www\.attpon\.online)$/,
+        credentials: false,
+      }),
+    )
     // 100/นาที/ต่อ IP ต่ำเกินไปสำหรับการใช้งานจริง (admin dashboard + หน้าจัดการหลายรายการ)
     // และทำให้ e2e suite ล้ม (ทุก request จาก IP เดียว ::1) — 1000/นาที กัน abuse ได้พอสมควร
     .use(rateLimit({ max: 1000, duration: 60_000 }))
