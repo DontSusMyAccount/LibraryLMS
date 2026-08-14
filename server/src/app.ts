@@ -1,5 +1,5 @@
 import { buildApp, UPLOADS_ROOT } from "./app.factory";
-import { createDatabaseClient, type DbConnection } from "./libs/db";
+import { createDatabaseClient, type DbClientOptions, type DbConnection } from "./libs/db";
 import { parseEnv } from "./libs/env";
 import type { Env } from "./libs/env";
 import { createAppModule } from "./modules/app.module";
@@ -33,10 +33,17 @@ function resolveR2Config(env: Env): R2StorageConfig | undefined {
  * คืน dbConnection ด้วย — Workers ต้องเรียก `client.end()` หลังจบ request
  * (สร้าง client ใหม่ทุก request ตามคำแนะนำ Hyperdrive; ถ้าไม่ปิด connection จะค้าง
  * ชน Workers limit ต่อ isolate → 503)
+ *
+ * dbOptions: pool options ตาม runtime — ต้องส่งแบบชัดเจนจาก entrypoint:
+ * - worker.cloudflare.ts → SERVERLESS_DB_OPTIONS (per-request client)
+ * - worker.ts            → PERSISTENT_DB_OPTIONS  (Bun pool อยู่ยาว)
  */
-export function createAppFromEnv(envInput: Record<string, string | undefined>): AppWithConnection {
+export function createAppFromEnv(
+  envInput: Record<string, string | undefined>,
+  dbOptions: DbClientOptions,
+): AppWithConnection {
   const env = parseEnv(envInput);
-  const dbConnection = createDatabaseClient(env.DATABASE_URL);
+  const dbConnection = createDatabaseClient(env.DATABASE_URL, dbOptions);
   const { db } = dbConnection;
 
   const appModuleDeps = {

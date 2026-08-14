@@ -1,4 +1,5 @@
 import { createAppFromEnv } from "./app";
+import { SERVERLESS_DB_OPTIONS } from "./libs/db";
 
 /**
  * Cloudflare Workers entry point (แทน worker.ts ที่ใช้ Bun TCP)
@@ -74,7 +75,7 @@ export default {
     // สร้าง app + DB client ใหม่ทุก request (ตามคำแนะนำ Cloudflare Hyperdrive:
     // อย่า cache client ใน global — I/O object ของ request หนึ่งใช้ข้าม request ไม่ได้)
     // Hyperdrive จัดการ connection pooling ให้ฝั่ง server แล้ว ต้นทุน ~2ms/request
-    const { app, dbConnection } = createAppFromEnv(toEnvRecord(env));
+    const { app, dbConnection } = createAppFromEnv(toEnvRecord(env), SERVERLESS_DB_OPTIONS);
     try {
       const response = await app.fetch(stripApiPrefix(request));
       // ปิด connection หลัง response ถูกสร้าง — client เป็น per-request ถ้าไม่ปิดจะค้าง
