@@ -35,11 +35,6 @@ export interface WorkerEnv {
   R2_PUBLIC_URL?: string;
 }
 
-/** ขั้นต่ำที่ fetch handler ใช้ — รอ async work (ปิด connection) หลัง response */
-interface ExecutionContext {
-  waitUntil(promise: Promise<unknown>): void;
-}
-
 function toEnvRecord(env: WorkerEnv): Record<string, string | undefined> {
   return {
     DATABASE_URL: env.HYPERDRIVE?.connectionString ?? env.DATABASE_URL,
@@ -71,20 +66,11 @@ function stripApiPrefix(request: Request): Request {
 }
 
 export default {
-  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: WorkerEnv): Promise<Response> {
     // สร้าง app + DB client ใหม่ทุก request (ตามคำแนะนำ Cloudflare Hyperdrive:
     // อย่า cache client ใน global — I/O object ของ request หนึ่งใช้ข้าม request ไม่ได้)
     // Hyperdrive จัดการ connection pooling ให้ฝั่ง server แล้ว ต้นทุน ~2ms/request
-    const { app, dbConnection } = createAppFromEnv(toEnvRecord(env), SERVERLESS_DB_OPTIONS);
-    try {
-      const response = await app.fetch(stripApiPrefix(request));
-      // ปิด connection หลัง response ถูกสร้าง — client เป็น per-request ถ้าไม่ปิดจะค้าง
-      // ใน isolate ชน Workers limit concurrent external connections (~6) → 503
-      ctx.waitUntil(dbConnection.client.end().catch(() => {}));
-      return response;
-    } catch (err) {
-      ctx.waitUntil(dbConnection.client.end().catch(() => {}));
-      throw err;
-    }
+    const { app } = createAppFromEnv(toEnvRecord(env), SERVERLESS_DB_OPTIONS);
+    return app.fetch(stripApiPrefix(request));
   },
 };

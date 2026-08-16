@@ -30,9 +30,9 @@ function resolveR2Config(env: Env): R2StorageConfig | undefined {
  * สำหรับ Bun: worker.ts เรียกตอน module load แล้ว app.listen()
  * สำหรับ Workers: worker.cloudflare.ts เรียกแบบ lazy ใน fetch handler
  *
- * คืน dbConnection ด้วย — Workers ต้องเรียก `client.end()` หลังจบ request
- * (สร้าง client ใหม่ทุก request ตามคำแนะนำ Hyperdrive; ถ้าไม่ปิด connection จะค้าง
- * ชน Workers limit ต่อ isolate → 503)
+ * คืน dbConnection ด้วยเพื่อให้ entrypoint ที่จัดการ connection เองนำไปใช้ได้
+ * (Cloudflare Workers + Hyperdrive ไม่ควรเรียก `client.end()` หลังจบ request
+ * เพราะ Hyperdrive จัดการ connection pool และ lifecycle ให้เอง)
  *
  * dbOptions: pool options ตาม runtime — ต้องส่งแบบชัดเจนจาก entrypoint:
  * - worker.cloudflare.ts → SERVERLESS_DB_OPTIONS (per-request client)
