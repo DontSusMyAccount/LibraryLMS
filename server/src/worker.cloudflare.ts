@@ -1,11 +1,13 @@
 import { createAppFromEnv } from "./app";
-import type { App } from "./app";
+import { SERVERLESS_DB_OPTIONS } from "./libs/db";
 
 /**
  * Cloudflare Workers entry point (แทน worker.ts ที่ใช้ Bun TCP)
  * - env มาจาก fetch handler binding ไม่ใช่ process.env
  * - DATABASE_URL อ่านจาก Hyperdrive binding (CF proxy → Neon) ถ้ามี
- * - สร้าง app แบบ lazy ครั้งเดียวต่อ isolate แล้ว cache ไว้ (DB client มี state)
+ * - สร้าง app + DB client ใหม่ทุก request (ห้าม cache เป็น global —
+ *   connection ที่สร้างใน request หนึ่งถูก request ถัดไปใช้ไม่ได้:
+ *   "Cannot perform I/O on behalf of a different request")
  */
 
 // Elysia compile request handler ด้วย Function() constructor (aot) โดย default
@@ -50,15 +52,6 @@ function toEnvRecord(env: WorkerEnv): Record<string, string | undefined> {
   };
 }
 
-let cachedApp: App | undefined;
-
-function getApp(env: WorkerEnv): App {
-  if (!cachedApp) {
-    cachedApp = createAppFromEnv(toEnvRecord(env));
-  }
-  return cachedApp;
-}
-
 const API_ROUTE_PREFIX = "/api-backend";
 
 /** ตัด prefix /api-backend ออกจาก pathname (web worker เรียกผ่าน BFF proxy ด้วย apiUrl + path) */
@@ -74,7 +67,10 @@ function stripApiPrefix(request: Request): Request {
 
 export default {
   async fetch(request: Request, env: WorkerEnv): Promise<Response> {
-    const app = getApp(env);
+    // สร้าง app + DB client ใหม่ทุก request (ตามคำแนะนำ Cloudflare Hyperdrive:
+    // อย่า cache client ใน global — I/O object ของ request หนึ่งใช้ข้าม request ไม่ได้)
+    // Hyperdrive จัดการ connection pooling ให้ฝั่ง server แล้ว ต้นทุน ~2ms/request
+    const { app } = createAppFromEnv(toEnvRecord(env), SERVERLESS_DB_OPTIONS);
     return app.fetch(stripApiPrefix(request));
   },
 };

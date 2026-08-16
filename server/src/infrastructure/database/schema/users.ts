@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { check, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-
 import { branches } from "./branches";
 import { userRoleEnum, userStatusEnum } from "./enums";
 
@@ -23,6 +22,9 @@ export const users = pgTable(
   (table) => [
     index("idx_users_role").on(table.role),
     index("idx_users_branch").on(table.branchId),
+    // ilike '%...%' บน fullName/email ใช้ trgm — ไม่งั้น seq scan ทุกครั้งที่ค้นหาสมาชิก
+    index("idx_users_fullname_trgm").using("gin", sql`${table.fullName} gin_trgm_ops`),
+    index("idx_users_email_trgm").using("gin", sql`${table.email} gin_trgm_ops`),
     check(
       "chk_users_member_type",
       sql`${table.memberType} IN ('general', 'undergraduate', 'graduate')`,

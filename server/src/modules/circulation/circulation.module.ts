@@ -6,7 +6,10 @@ import { container } from "tsyringe";
 import { TOKENS } from "../tokens";
 import { LoanController } from "./adapters/controllers/loan.controller";
 import { DrizzleLoanRepository } from "./adapters/repository/loan.drizzle.repository";
-import { loanRepositoryToken } from "./applications/ports/loan.repository";
+import {
+  loanRepositoryToken,
+  transactionalLoanRepositoryToken,
+} from "./applications/ports/loan.repository";
 import { CheckinUsecase } from "./applications/usecases/checkin.usecase";
 import { CheckoutUsecase } from "./applications/usecases/checkout.usecase";
 import { ListActiveLoansUsecase } from "./applications/usecases/list-active-loans.usecase";
@@ -25,6 +28,7 @@ export function registerCirculationModule(deps: CirculationModuleDeps): void {
   container.register(TOKENS.InternalSecret, { useValue: deps.internalSecret });
 
   container.register(loanRepositoryToken, { useClass: DrizzleLoanRepository });
+  container.register(transactionalLoanRepositoryToken, { useClass: DrizzleLoanRepository });
 
   container.register(CheckoutUsecase, { useClass: CheckoutUsecase });
   container.register(CheckinUsecase, { useClass: CheckinUsecase });

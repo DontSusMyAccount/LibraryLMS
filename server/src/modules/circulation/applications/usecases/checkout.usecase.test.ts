@@ -17,8 +17,8 @@ import type {
   ICreateFineInput,
   ICreateLoanInput,
   IMemberInfo,
-  ILoanRepository,
   IReturnLoanInput,
+  ITransactionalLoanRepository,
 } from "../ports/loan.repository";
 import { CheckoutUsecase } from "./checkout.usecase";
 
@@ -33,10 +33,14 @@ interface LoanRepoState {
   hasReservation: boolean;
   recallBufferDays: number;
   nextId: number;
+  transactionCalls: number;
 }
 
-function createLoanRepository(state: LoanRepoState): ILoanRepository {
-  return {
+function createLoanRepository(
+  state: LoanRepoState,
+  audit: IAuditRepository,
+): ITransactionalLoanRepository {
+  const repo: ITransactionalLoanRepository = {
     findMemberById: async (userId) => state.members.find((member) => member.id === userId) ?? null,
     findPoliciesByRole: async () => state.policies,
     findCopyByCode: async (copyCode) =>
@@ -115,7 +119,12 @@ function createLoanRepository(state: LoanRepoState): ILoanRepository {
     },
     hasActiveReservation: async () => state.hasReservation,
     getSystemSetting: async () => state.recallBufferDays,
+    runTransaction: async (fn) => {
+      state.transactionCalls += 1;
+      return fn({ loans: repo, audit });
+    },
   };
+  return repo;
 }
 
 function createAuditRepository(): IAuditRepository & { records: AuditLog[] } {
@@ -176,6 +185,7 @@ function buildState(overrides: Partial<LoanRepoState> = {}): LoanRepoState {
     hasReservation: false,
     recallBufferDays: 7,
     nextId: 1,
+    transactionCalls: 0,
     ...overrides,
   };
 }
@@ -200,7 +210,7 @@ describe("CheckoutUsecase", () => {
   it("ยืมสำเร็จ: สร้าง loan ตาม due date ของ policy, copy → borrowed, snapshot policy ลง loan", async () => {
     const state = buildState();
     const auditRepo = createAuditRepository();
-    const usecase = new CheckoutUsecase(createLoanRepository(state), auditRepo);
+    const usecase = new CheckoutUsecase(createLoanRepository(state, auditRepo));
 
     const result = await usecase.execute({
       command: { userId: "u-member", copyCode: "BK-001" },
@@ -214,6 +224,7 @@ describe("CheckoutUsecase", () => {
     expect(result.loan.loanPeriodDays).toBe(14);
     expect(result.loan.dailyFineRate).toBe(5);
     expect(state.copies[0]!.status).toBe("borrowed");
+    expect(state.transactionCalls).toBe(1);
     expect(auditRepo.records).toHaveLength(1);
     expect(auditRepo.records[0]).toMatchObject({
       userId: "u-librarian",
@@ -229,7 +240,7 @@ describe("CheckoutUsecase", () => {
         buildActiveLoan({ id: `loan-${index + 1}`, copyId: `c-${index + 10}` }),
       ),
     });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "BK-001" }, now: NOW }),
@@ -251,7 +262,7 @@ describe("CheckoutUsecase", () => {
         },
       ],
     });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "BK-001" }, now: NOW }),
@@ -264,7 +275,7 @@ describe("CheckoutUsecase", () => {
         { id: "u-member", role: "student", memberType: "undergraduate", status: "suspended" },
       ],
     });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "BK-001" }, now: NOW }),
@@ -283,7 +294,7 @@ describe("CheckoutUsecase", () => {
         },
       ],
     });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "BK-001" }, now: NOW }),
@@ -294,7 +305,7 @@ describe("CheckoutUsecase", () => {
     const state = buildState({
       loans: [buildActiveLoan({ copyId: "c-1" })],
     });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "BK-001" }, now: NOW }),
@@ -303,7 +314,7 @@ describe("CheckoutUsecase", () => {
 
   it("ไม่พบสำเนา → DomainNotFoundError", async () => {
     const state = buildState({ copies: [] });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-member", copyCode: "NOT-EXIST" }, now: NOW }),
@@ -312,7 +323,7 @@ describe("CheckoutUsecase", () => {
 
   it("ไม่พบสมาชิก → DomainNotFoundError", async () => {
     const state = buildState({ members: [] });
-    const usecase = new CheckoutUsecase(createLoanRepository(state), createAuditRepository());
+    const usecase = new CheckoutUsecase(createLoanRepository(state, createAuditRepository()));
 
     await expect(
       usecase.execute({ command: { userId: "u-ghost", copyCode: "BK-001" }, now: NOW }),

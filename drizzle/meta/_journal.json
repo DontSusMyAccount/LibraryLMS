@@ -8,6 +8,13 @@
       "when": 1786341346772,
       "tag": "0000_big_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786693969828,
+      "tag": "0001_clever_killraven",
+      "breakpoints": true
     }
   ]
 }
